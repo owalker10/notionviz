@@ -6,6 +6,7 @@ import admin = require("firebase-admin");
 require("dotenv").config();
 
 const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT || "";
+console.log("service account", serviceAccount !== "");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
