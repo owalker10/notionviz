@@ -1,9 +1,19 @@
-import * as functions from "firebase-functions";
+import functions = require("firebase-functions");
+import express = require("express");
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//   functions.logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+import admin = require("firebase-admin");
+
+require("dotenv").config();
+
+const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT || "";
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+const app = express();
+app.get("/api/timestamp", (req, res) => {
+  res.send(`${Date.now()}`);
+});
+
+exports.app = functions.https.onRequest(app);

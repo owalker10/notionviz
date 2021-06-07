@@ -6,23 +6,29 @@
     "@testing-library/jest-dom": "^5.13.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
+    "@types/jest": "^26.0.23",
+    "@types/node": "^15.12.1",
+    "@types/react": "^17.0.9",
+    "@types/react-dom": "^17.0.6",
     "dotenv": "^8.2.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
+    "typescript": "^4.3.2",
     "web-vitals": "^1.1.2"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "cross-env NODE_ENV=development react-scripts start",
     "build": "react-scripts build",
+    "serve": "cross-env NODE_ENV=development firebase serve --only functions --port 5001",
+    "shell": "firebase functions:shell",
+    "start:shell": "npm run shell",
+    "start:server": "npm run serve",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log",
+    "lint": "eslint .",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -35,5 +41,20 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.26.0",
+    "@typescript-eslint/parser": "^4.26.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.28.0",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "3.4.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-react": "^7.24.0",
+    "prettier": "^2.3.1"
+  },
+  "proxy": "http://localhost:5001/notion-viz/us-central1/app"
 }
