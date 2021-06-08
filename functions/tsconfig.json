@@ -8,8 +8,9 @@
     "strict": true,
     "target": "es2017",
     "jsx": "react",
+    "lib": ["es2017"]
   },
-  "compileOnSave": true,
+  "extends": "../tsconfig.json",
   "include": [
     "src"
   ]

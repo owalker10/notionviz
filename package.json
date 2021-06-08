@@ -14,21 +14,29 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
-    "typescript": "^4.3.2",
-    "web-vitals": "^1.1.2"
+    "typescript": "^4.3.2"
+  },
+  "engines": {
+    "node": "14.x"
   },
   "scripts": {
     "start": "cross-env NODE_ENV=development react-scripts start",
-    "build": "react-scripts build",
+    "build": "npm run build-frontend && npm run build-functions",
+    "build-frontend": "react-scripts build",
+    "build-functions": "cd functions && tsc",
     "serve": "cross-env NODE_ENV=development firebase serve --only functions --port 5001",
     "shell": "firebase functions:shell",
     "start:shell": "npm run shell",
     "start:server": "npm run serve",
-    "deploy": "firebase deploy --only functions",
+    "deploy": "firebase deploy --only functions,hosting",
+    "build-and-deploy": "npm run build && npm run deploy",
     "logs": "firebase functions:log",
     "lint": "eslint .",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "unhost": "firebase hosting:disble",
+    "del-func": "firebase functions:delete app",
+    "panic": "npm run unhost && npm run del-func"
   },
   "browserslist": {
     "production": [
