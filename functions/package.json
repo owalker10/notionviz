@@ -1,12 +1,12 @@
 {
-  "name": "functions",
+  "name": "notionviz-functions",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
     "build": "tsc",
     "serve": "npm run build && firebase emulators:start --only functions",
+    "serve2": "cross-env NODE_ENV=development firebase serve --only functions --port 5001",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log"
   },
   "engines": {
@@ -18,20 +18,24 @@
     "express": "^4.17.1",
     "firebase": "^8.6.5",
     "firebase-admin": "^9.8.0",
-    "firebase-functions": "^3.14.1"
+    "firebase-functions": "^3.14.1",
+    "simple-oauth2": "^4.2.0"
   },
   "devDependencies": {
-    "@types/express": "^4.17.3",
-    "@types/node": "^15.12.1",
-    "@typescript-eslint/eslint-plugin": "^4.26.0",
-    "@typescript-eslint/parser": "^4.26.0",
+    "@types/express": "^4.17.12",
+    "@types/node": "^15.12.2",
+    "@types/simple-oauth2": "^4.1.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "@typescript-eslint/parser": "^4.26.1",
     "eslint": "^7.28.0",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-import": "^2.23.4",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prettier": "^3.4.0",
     "eslint-plugin-react": "^7.24.0",
-    "firebase-functions-test": "^0.2.0",
-    "typescript": "^3.8.0"
+    "prettier": "^2.3.1",
+    "typescript": "^4.3.2"
   },
   "private": true
 }

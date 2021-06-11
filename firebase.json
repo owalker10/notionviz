@@ -1,11 +1,9 @@
 {
   "functions": {
-    "predeploy": [
-     
-    ]
+    "predeploy": []
   },
   "hosting": {
-    "public": "build",
+    "public": "client/build",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -13,8 +11,8 @@
     ],
     "rewrites": [
       {
-        "source": "/api/**",
-        "function": "app"
+        "source": "/auth/**",
+        "function": "auth"
       }
     ]
   }

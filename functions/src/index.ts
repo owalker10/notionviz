@@ -1,8 +1,8 @@
-import functions = require("firebase-functions");
-import express = require("express");
+import * as functions from "firebase-functions";
+import admin from "firebase-admin";
+import authService from "./auth";
 
-import admin = require("firebase-admin");
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 require("dotenv").config();
 
 const serviceAccount: admin.ServiceAccount = JSON.parse(
@@ -15,9 +15,4 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-const app = express();
-app.get("/api/timestamp", (req, res) => {
-  res.send(`${Date.now()}`);
-});
-
-exports.app = functions.https.onRequest(app);
+exports.auth = functions.https.onRequest(authService);

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 
-function App() {
+function App(): JSX.Element {
   const [time, setTime] = useState(0);
   useEffect(() => {
     fetch("/api/timestamp")

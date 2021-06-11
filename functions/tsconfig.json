@@ -8,10 +8,15 @@
     "strict": true,
     "target": "es2017",
     "jsx": "react",
-    "lib": ["es2017"]
+    "lib": ["es2017"],
+    "allowSyntheticDefaultImports": true
   },
-  "extends": "../tsconfig.json",
+  "extends": "../tsconfig.base.json",
   "include": [
     "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "lib"
   ]
 }

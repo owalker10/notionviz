@@ -1,8 +1,11 @@
 {
-    "compilerOptions": { "strict": true },
+    "extends": "./tsconfig.json",
     "include": [
-      "**/src/**/*.ts",
-      "**/test/**/*.ts",
-      // etc
+        // repeated from base config's "include" setting
+        "client/src/*",
+        "functions/src/*",
+
+        // these are the eslint-only inclusions
+        ".eslintrc.js",
     ]
-  }
+}
