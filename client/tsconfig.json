@@ -11,7 +11,11 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@graph": ["../node_modules/common/lib/graph"]
+    }
   },
   "include": [
     "src"

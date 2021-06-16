@@ -1,8 +1,17 @@
 {
-  "name": "notionviz-client",
-  "version": "0.1.0",
+  "name": "client",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@material-ui/core": "^4.11.4",
+    "@material-ui/icons": "^4.11.2",
+    "@nivo/bar": "^0.70.1",
+    "@nivo/calendar": "^0.70.1",
+    "@nivo/core": "^0.70.1",
+    "@nivo/heatmap": "^0.70.1",
+    "@nivo/line": "^0.70.1",
+    "@nivo/pie": "^0.70.1",
+    "@nivo/waffle": "^0.70.1",
     "@testing-library/jest-dom": "^5.13.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
@@ -10,6 +19,7 @@
     "@types/node": "^15.12.1",
     "@types/react": "^17.0.9",
     "@types/react-dom": "^17.0.6",
+    "common": "1.0.0",
     "dotenv": "^8.2.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -25,7 +35,6 @@
     "lint": "eslint .",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
-
   },
   "browserslist": {
     "production": [

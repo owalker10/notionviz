@@ -21,7 +21,8 @@ module.exports = {
   ],
   rules: {
     'no-unused-vars': ['error', {'varsIgnorePattern': '^_','argsIgnorePattern': '^_'}],
-    "import/prefer-default-export": "off"
+    "import/prefer-default-export": "off",
+    "no-console": "off",
   },
   ignorePatterns: ['.eslintrc.js',"**/build/*","**/node_modules/*","**/lib/*"]
 }

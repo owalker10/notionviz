@@ -3,15 +3,19 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "dev": "cd client && npm run start",
-        "serve": "cd functions && npm run serve",
-        "build-frontend": "cd client && npm run build",
-        "build-server": "cd functions && npm run build",
-        "build": "npm run build-frontend && npm run build-server",
+        "dev": "yarn workspace client start",
+        "serve": "yarn workspace functions serve",
+        "build-frontend": "yarn workspace client build",
+        "build-server": "yarn workspace functions build",
+        "build": "yarn build-frontend && yarn build-server",
         "deploy": "firebase deploy --only functions,hosting",
-        "build-and-deploy": "npm run build-frontend && npm run build-server",
+        "build-and-deploy": "yarn build-frontend && yarn build-server",
         "unhost": "firebase hosting:disble",
         "del-func": "firebase functions:delete app",
-        "panic": "npm run unhost && npm run del-func"
-    }
+        "panic": "yarn unhost && yarn del-func"
+    },
+    "engines": {
+        "node": "14"
+    },
+    "workspaces": ["common", "client", "functions"]
 }

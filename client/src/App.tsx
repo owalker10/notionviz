@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { GraphType } from "@graph";
 import logo from "./logo.svg";
 import "./App.css";
 
@@ -11,6 +12,7 @@ function App(): JSX.Element {
         setTime(timestamp);
       });
   }, []);
+  console.log(GraphType.bar);
   return (
     <div className="App">
       <header className="App-header">

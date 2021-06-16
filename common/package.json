@@ -1,0 +1,8 @@
+{
+  "name": "common",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "tsc -b -d"
+  },
+  "main": "lib/index.js"
+}
