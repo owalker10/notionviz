@@ -2,7 +2,12 @@
   "name": "common",
   "version": "1.0.0",
   "scripts": {
-    "build": "tsc -b -d"
+    "build": "tsc -d"
   },
-  "main": "lib/index.js"
+  "main": "lib/index.js",
+  "dependencies": {
+    "@notionhq/client": "^0.1.9",
+    "firebase": "^8.6.7",
+    "firebase-admin": "^9.9.0"
+  }
 }

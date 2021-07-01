@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "scripts": {
     "lint": "eslint --ext .js,.ts .",
-    "build": "tsc",
-    "serve": "npm run build && firebase emulators:start --only functions",
-    "serve2": "cross-env NODE_ENV=development firebase serve --only functions --port 5001",
+    "build": "tsc -b",
+    "serve": "yarn build && firebase emulators:start --only functions,firestore,auth --import=./local_data --export-on-exit",
+    "serve-nodb": "cross-env NODE_ENV=development yarn build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "loadenv": "firebase functions:config:unset env && firebase functions:config:set env=\"$(cat .env.json)\""
   },
   "engines": {
     "node": "14"
@@ -16,15 +17,21 @@
   "main": "lib/index.js",
   "dependencies": {
     "common": "1.0.0",
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "express-session": "^1.17.2",
     "firebase": "^8.6.5",
     "firebase-admin": "^9.8.0",
     "firebase-functions": "^3.14.1",
     "simple-oauth2": "^4.2.0"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.2",
+    "@types/cors": "^2.8.10",
     "@types/express": "^4.17.12",
+    "@types/express-session": "^1.17.3",
     "@types/node": "^15.12.2",
     "@types/simple-oauth2": "^4.1.0",
     "@typescript-eslint/eslint-plugin": "^4.26.1",

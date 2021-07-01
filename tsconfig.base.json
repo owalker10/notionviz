@@ -11,8 +11,11 @@
       "dom.iterable",
       "esnext"
     ],
+    "baseUrl": ".",
+    "paths": {
+      "@common/*": ["node_modules/common/lib/*"]
+    }
   },
-
   "exclude": [
     "node_modules",
     "dist",

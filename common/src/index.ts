@@ -1,1 +1,2 @@
-export * as graph from './graph'
+export * from './graph'
+export * from './firestore'

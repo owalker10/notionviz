@@ -1,3 +1,5 @@
+import { AnyProperty } from '../notion/schemas'
+
 export enum GraphType  {
   bar = 'bar',
   line = 'line',
@@ -18,14 +20,7 @@ Variables can either be numerical or categorical
   - i.e. Status + COUNT, Genre + AVG(pages) for average page count by genre, etc.
 */
 
-// probably want to move this to the Notion folder?
-type NotionPropertyType = 'person' | 'name' // etc...
 
-interface Property {
-  name: string,
-  type: NotionPropertyType,
-  quant: boolean
-}
 
 type VarType = 'categorical' | 'numerical';
 
@@ -33,9 +28,10 @@ interface Variable {
   type: VarType
 }
 
+// ex: due date: date
 interface Categorical extends Variable {
   type: 'categorical',
-  property: Property
+  property: AnyProperty,
 }
 
 interface Numerical extends Variable {
@@ -47,11 +43,20 @@ interface Numerical extends Variable {
 //   fn: 'COUNT' | 'SUM'
 // }
 
-interface Graph {
-  type: GraphType,
-  x: Variable,
-  y: Variable,
-  group?: Variable,
+abstract class Graph {
+  type: GraphType;
+  x: Variable;
+  y: Variable;
+  group?: Variable;
+  constructor(type: GraphType, x: Variable, y: Variable, group?: Variable) {
+    this.type = type;
+    this.x = x;
+    this.y = y;
+    this.group = group;
+  }
+
+  abstract plot(data: any): any; // data to datapoints
+  abstract getProps(): any;
 
 }
 

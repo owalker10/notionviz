@@ -24,5 +24,5 @@ module.exports = {
     "import/prefer-default-export": "off",
     "no-console": "off",
   },
-  ignorePatterns: ['.eslintrc.js',"**/build/*","**/node_modules/*","**/lib/*"]
+  ignorePatterns: ['.eslintrc.js',"**/build/*","**/node_modules/*","**/lib/*","config-overrides.js"]
 }
