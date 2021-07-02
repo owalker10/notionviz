@@ -15,10 +15,19 @@
         "build-and-deploy": "yarn build && yarn deploy",
         "unhost": "firebase hosting:disable",
         "del-func": "firebase functions:delete app",
-        "panic": "yarn unhost && yarn del-func"
+        "panic": "yarn unhost && yarn del-func",
+        "pack-lib": "cd common && yarn pack --filename common.tgz && mv common.tgz ../functions/common.tgz && cd .. && yarn workspace functions remove common && yarn workspace functions add file:./common.tgz && yarn fix-lock",
+        "unpack-lib": "yarn workspace functions remove common && rm functions/common.tgz && yarn fix-lock && yarn workspace functions add common@1.0.0",
+        "fix-lock": "cd ./functions && npm i --package-lock-only"
     },
     "engines": {
         "node": "14"
     },
-    "workspaces": ["common", "client", "functions"]
+    "workspaces": {
+        "packages": ["common", "client", "functions"],
+        "nohoist": [
+            "functions/common",
+            "functions/**"
+        ]
+    }
 }

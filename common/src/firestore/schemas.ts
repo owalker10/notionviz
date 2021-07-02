@@ -12,8 +12,12 @@ export interface Graph {
 export interface User {
   uid: string;
   workspaceName: string;
-  accessToken: string;
   graphs: string[]; // gid's
+}
+
+export interface Private {
+  token: string;
+  secret: string;
 }
 
 export interface Feedback {

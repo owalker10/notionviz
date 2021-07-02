@@ -56,7 +56,6 @@ export const consumeUser = async (
     workspaceName: user.displayName ?? user.uid.slice(0, 8),
     workspaceIcon: user.photoURL,
     graphs: dbUser.graphs,
-    accessToken: dbUser.accessToken,
   };
 };
 

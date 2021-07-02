@@ -1,35 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
-
-import * as functions from "firebase-functions";
-import express, { Request as ExpressRequest } from "express";
-import crypto from "crypto";
-import cookieParser from "cookie-parser";
-import session from "express-session";
+import { asTypedDb } from "common/lib";
+import express from "express";
 import admin from "firebase-admin";
-import { asTypedDb } from "common";
 import { AuthorizationCode } from "simple-oauth2";
+import crypto from "crypto";
 import getEnv from "../env";
 
-declare module "express-session" {
-  interface SessionData {
-    back_to: string;
-  }
-}
+const router = express.Router();
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require("dotenv").config();
-
-const serviceAccount = JSON.parse(
-  Buffer.from(getEnv("FIREBASE_SERVICE_ACCOUNT") || "", "base64").toString(
-    "ascii"
-  )
-);
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
 const emulated = process.env.FUNCTIONS_EMULATOR === "true";
 const hostEmulated = process.env.REACT_APP_HOST === "true";
+
 const credentials = {
   client: {
     id: getEnv("NOTION_CLIENT_ID") ?? "",
@@ -42,28 +22,19 @@ const credentials = {
   },
 };
 const db = asTypedDb(admin.firestore());
-const getRedirectUri = (req: ExpressRequest) =>
+const getRedirectUri = (ref: string) =>
   // eslint-disable-next-line no-nested-ternary
   emulated && !hostEmulated
-    ? `http://localhost:5001/notion-viz/us-central1/auth/auth/callback`
+    ? `http://localhost:5001/notion-viz/us-central1/api/api/auth/callback`
     : hostEmulated
     ? `http://localhost:5000/auth/callback`
-    : `${req.protocol}://${req.hostname}/auth/callback`;
+    : `${ref}auth/callback`;
 const client = new AuthorizationCode(credentials);
-const app = express();
-app.use(cookieParser());
-app.use(
-  session({
-    secret: getEnv("SESSION_SECRET") ?? "",
-    cookie: { secure: !emulated },
-    saveUninitialized: false,
-    resave: false,
-  })
-);
-app.get("/redirect", (req, res) => {
+
+router.get("/redirect", (req, res) => {
   req.session.back_to = req.header("Referer");
   // automatically log in to my test Notion workspace to avoid the Notion OAuth flow
-  if (emulated && !hostEmulated) {
+  if (emulated && !hostEmulated && !process.env.NOSKIP) {
     admin
       .auth()
       .createCustomToken(process.env.TEST_UID ?? "")
@@ -74,21 +45,23 @@ app.get("/redirect", (req, res) => {
         console.error("Error creating token for test account", err);
         res.redirect(`${req.session.back_to}?err=true`);
       });
+  } else {
+    const state = req.session.state || crypto.randomBytes(20).toString("hex");
+    // const secureCookie = !emulated;
+    // res.cookie("state", state.toString(), {
+    //   maxAge: 3600000,
+    //   secure: secureCookie,
+    //   httpOnly: true,
+    // });
+    // console.log(getRedirectUri(req));
+    req.session.state = state.toString();
+    const redirectUri = client.authorizeURL({
+      redirect_uri: getRedirectUri(req.session.back_to ?? ""),
+      scope: "basic",
+      state,
+    });
+    res.redirect(redirectUri);
   }
-  const state = req.cookies.state || crypto.randomBytes(20).toString("hex");
-  const secureCookie = !emulated;
-  res.cookie("state", state.toString(), {
-    maxAge: 3600000,
-    secure: secureCookie,
-    httpOnly: true,
-  });
-  // console.log(getRedirectUri(req));
-  const redirectUri = client.authorizeURL({
-    redirect_uri: getRedirectUri(req),
-    scope: "basic",
-    state,
-  });
-  res.redirect(redirectUri);
 });
 
 const createFirebaseAccount = async (
@@ -102,13 +75,20 @@ const createFirebaseAccount = async (
   console.log(botId, workspaceName, workspaceIcon, accessToken);
   // Save the access token to the Firebase Realtime Database.
   const user = db.users.doc(uid);
-  const databaseTask = user.get().then((doc) => {
+  const userDatabaseTask = user.get().then((doc) => {
     if (!doc.exists) {
       user.set({
         uid,
         workspaceName,
-        accessToken,
         graphs: [],
+      });
+    }
+  });
+  const tokenDoc = db.users.private(uid).doc("token");
+  const tokenDatabaseTask = tokenDoc.get().then((doc) => {
+    if (!doc.exists) {
+      tokenDoc.set({
+        token: accessToken,
       });
     }
   });
@@ -131,7 +111,11 @@ const createFirebaseAccount = async (
       throw error;
     });
   // Wait for all async task to complete then generate and return a custom auth token.
-  return Promise.all([userCreationTask, databaseTask]).then(() => {
+  return Promise.all([
+    userCreationTask,
+    userDatabaseTask,
+    tokenDatabaseTask,
+  ]).then(() => {
     // Create a Firebase custom auth token.
     const token = admin.auth().createCustomToken(uid);
     return token;
@@ -152,22 +136,22 @@ const createFirebaseAccount = async (
 //       });
 //     </script>`;
 // }
-app.get("/callback", (req, res) => {
-  console.log("Received state cookie:", req.cookies.state);
+router.get("/callback", (req, res) => {
+  console.log("Received state cookie:", req.session.state);
   console.log("Received state query parameter:", req.query.state);
-  if (!req.cookies.state) {
+  if (!req.session.state) {
     res
       .status(400)
       .send(
         "State cookie not set or expired. Maybe you took too long to authorize. Please try again."
       );
-  } else if (req.cookies.state !== req.query.state) {
+  } else if (req.session.state !== req.query.state) {
     res.status(400).send("State validation failed");
   }
   client
     .getToken({
       code: req.query.code?.toString() ?? "",
-      redirect_uri: getRedirectUri(req),
+      redirect_uri: getRedirectUri(req.session.back_to ?? ""),
     })
     .then((results) => {
       console.log("Auth code exchange result received:", results);
@@ -194,6 +178,5 @@ app.get("/callback", (req, res) => {
       });
     });
 });
-const main = express();
-main.use("/auth", app);
-export default functions.https.onRequest(main);
+
+export default router;

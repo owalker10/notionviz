@@ -1,4 +1,4 @@
 import * as functions from "firebase-functions";
-import authService from "./auth";
+import api from "./api";
 
-exports.auth = functions.https.onRequest(authService);
+exports.api = functions.https.onRequest(api);

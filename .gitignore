@@ -26,3 +26,4 @@ ui-debug.log*
 help.me
 
 .firebase
+**/local_data

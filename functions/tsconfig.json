@@ -9,14 +9,19 @@
     "target": "es2017",
     "jsx": "react",
     "lib": ["es2017"],
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": [
+      "./typings-custom",
+      "../node_modules/@types"
+    ]
   },
   "extends": "../tsconfig.base.json",
   "include": [
+    "./typings-custom/**/*.ts",
     "src"
   ],
   "exclude": [
-    "node_modules",
+    "**/node_modules",
     "lib"
   ]
 }

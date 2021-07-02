@@ -1,6 +1,7 @@
 {
   "functions": {
-    "predeploy": [],
+    "predeploy": ["yarn pack-lib"],
+    "postdeploy": ["yarn unpack-lib"],
     "source": "functions"
   },
   "hosting": {
@@ -12,8 +13,8 @@
     ],
     "rewrites": [
       {
-        "source": "/auth/**",
-        "function": "auth"
+        "source": "/api/**",
+        "function": "api"
       }
     ]
   },
