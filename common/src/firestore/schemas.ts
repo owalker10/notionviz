@@ -3,8 +3,9 @@ import { GraphType } from "../graph";
 export interface Graph {
   gid: string;
   db: string;
-  uid: string;
   type: GraphType;
+  public: boolean;
+  lastOpened: Date;
   datapoints: number[]; // todo
   props: string[] // todo
 }
@@ -12,12 +13,11 @@ export interface Graph {
 export interface User {
   uid: string;
   workspaceName: string;
-  graphs: string[]; // gid's
 }
 
 export interface Private {
   token: string;
-  secret: string;
+  //secret: string;
 }
 
 export interface Feedback {

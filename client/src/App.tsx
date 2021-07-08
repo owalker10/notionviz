@@ -1,47 +1,44 @@
 import React from "react";
-import Button from "@material-ui/core/Button";
-import { BrowserRouter as Router } from "react-router-dom";
-import logo from "./logo.svg";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import "./App.css";
-import { authRedirectURL, useAuth } from "./hooks/useAuth";
+import { ThemeProvider } from "@material-ui/core/styles";
+import { CssBaseline } from "@material-ui/core";
+import theme from "./styles/theme";
 import { GlobalProvider } from "./Context/context";
+import MainLayout from "./Components/MainLayout";
+import { Title } from "./styles/typography";
 
-const Authy = (): React.ReactElement => {
-  const { auth, logout } = useAuth();
-  const { user, loggedIn } = auth;
-  return (
-    <div>
-      {loggedIn ? (
-        <>
-          <p style={{ color: "white" }}>Hello {user?.workspaceName}</p>
-          <Button color="primary" variant="contained" onClick={logout}>
-            Logout
-          </Button>
-        </>
-      ) : (
-        <a style={{ textDecoration: "none" }} href={authRedirectURL}>
-          <Button color="primary" variant="contained">
-            Login
-          </Button>
-        </a>
-      )}
-    </div>
-  );
-};
+// https://reactrouter.com/web/api/Hooks/useparams
 
 const App = (): JSX.Element => {
-  console.log(process.env.NODE_ENV);
+  // console.log(process.env.NODE_ENV);
   return (
-    <Router>
-      <GlobalProvider>
-        <div className="App">
-          <header className="App-header">
-            <img src={logo} className="App-logo" alt="logo" />
-            <Authy />
-          </header>
-        </div>
-      </GlobalProvider>
-    </Router>
+    <div className="App" style={{ minHeight: "100vh" }}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline>
+          <Router>
+            <GlobalProvider>
+              <MainLayout>
+                <Switch>
+                  <Route exact path="/">
+                    <Title>Welcome to NotionViz!</Title>
+                  </Route>
+                  <Route exact path="/graphs">
+                    <div />
+                  </Route>
+                  <Route exact path="/edit/:gid">
+                    <div />
+                  </Route>
+                  <Route exact path="/embed/:gid">
+                    <div />
+                  </Route>
+                </Switch>
+              </MainLayout>
+            </GlobalProvider>
+          </Router>
+        </CssBaseline>
+      </ThemeProvider>
+    </div>
   );
 };
 

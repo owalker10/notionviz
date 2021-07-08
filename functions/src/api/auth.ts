@@ -1,4 +1,4 @@
-import { asTypedDb } from "common/lib";
+import { asTypedDb } from "common";
 import express from "express";
 import admin from "firebase-admin";
 import { AuthorizationCode } from "simple-oauth2";
@@ -80,11 +80,10 @@ const createFirebaseAccount = async (
       user.set({
         uid,
         workspaceName,
-        graphs: [],
       });
     }
   });
-  const tokenDoc = db.users.private(uid).doc("token");
+  const tokenDoc = db.private(uid).doc("token");
   const tokenDatabaseTask = tokenDoc.get().then((doc) => {
     if (!doc.exists) {
       tokenDoc.set({

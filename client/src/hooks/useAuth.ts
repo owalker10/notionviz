@@ -5,7 +5,6 @@ import { auth as authService } from "../Services/Firebase";
 
 export const useAuth = (): { logout: VoidFunction; auth: Auth } => {
   const { state, dispatch } = useContext(AppContext);
-  console.log(state);
   if (state === undefined) {
     throw new Error("useAuth must be used within a ContextProvider");
   }

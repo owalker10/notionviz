@@ -23,6 +23,7 @@ module.exports = {
     'no-unused-vars': ['error', {'varsIgnorePattern': '^_','argsIgnorePattern': '^_'}],
     "import/prefer-default-export": "off",
     "no-console": "off",
+    "react/prop-types": "off",
   },
   ignorePatterns: ['.eslintrc.js',"**/build/*","**/node_modules/*","**/lib/*","config-overrides.js"]
 }

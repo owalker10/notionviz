@@ -46,6 +46,7 @@ export const consumeUser = async (
 ): Promise<User | null> => {
   console.log("CONSUME");
   if (user === null) return null;
+  console.log("users:", firestore.users);
   const dbUser: FirestoreUser | undefined = await getData(
     firestore.users,
     user.uid
@@ -55,7 +56,6 @@ export const consumeUser = async (
     uid: user.uid,
     workspaceName: user.displayName ?? user.uid.slice(0, 8),
     workspaceIcon: user.photoURL,
-    graphs: dbUser.graphs,
   };
 };
 

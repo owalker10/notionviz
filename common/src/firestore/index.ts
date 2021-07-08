@@ -55,8 +55,10 @@ type UserCol<F> = Col<F, User> & {
 };
 
 interface TypedFirestore<F> {
-  users: UserCol<F>;
+  users: Col<F, User>;
   feedback: Col<F, Feedback>;
+  private: PrivateCol<F>;
+  graphs: SubFactory<F,Graph>;
 }
 
 // this might be the worst thing I've ever written
@@ -72,17 +74,15 @@ const asTypedDbInner = (db: FirestoreClient | FirestoreAdmin, local: boolean = t
   : (doc: string) => (collection as AdminCollection<any>).doc(doc).collection(subpath).withConverter(converter<T,typeof db>())
   );}
 
-  const users = Collection<User>('users') as UserCol<typeof db>;
+  const users = Collection<User>('users');
   const feedback = Collection<Feedback>('feedback');
   const priv: PrivateCol<typeof db> = SubCollection<Private>(users,'private');
 
   return {
-    users: {
-      ...users,
-      private: SubCollection<PrivateDoc<keyof Private>>(users,'private'),
-      graphs: SubCollection<Graph>(users,'graphs'),
-    } as UserCol<typeof db>,
+    users,
     feedback,
+    private: SubCollection<Private>(users,'private'),
+    graphs: SubCollection<Graph>(users,'graphs'),
   };
 }
 
