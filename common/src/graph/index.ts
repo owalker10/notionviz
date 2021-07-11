@@ -41,25 +41,29 @@ interface Numerical extends Variable {
 //   fn: 'COUNT' | 'SUM'
 // }
 
-abstract class Graph {
+// export abstract class Graph {
+//   type: GraphType;
+//   x: Variable;
+//   y: Variable;
+//   group?: Variable;
+
+//   constructor(type: GraphType, x: Variable, y: Variable, group?: Variable) {
+//     this.type = type;
+//     this.x = x;
+//     this.y = y;
+//     this.group = group;
+//   }
+
+//   abstract plot(data: any): any; // data to datapoints
+
+//   abstract getProps(): any;
+// }
+
+export interface Graph {
   type: GraphType;
-
   x: Variable;
-
   y: Variable;
-
   group?: Variable;
-
-  constructor(type: GraphType, x: Variable, y: Variable, group?: Variable) {
-    this.type = type;
-    this.x = x;
-    this.y = y;
-    this.group = group;
-  }
-
-  abstract plot(data: any): any; // data to datapoints
-
-  abstract getProps(): any;
 }
 
 // @ts-ignore

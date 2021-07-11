@@ -1,18 +1,16 @@
-import { GraphType } from "../graph";
+import { Graph as GraphBase } from "../graph";
 
-export interface Graph {
+export interface Graph extends GraphBase {
   gid: string;
   db: string;
-  type: GraphType;
   public: boolean;
-  lastOpened: Date;
-  datapoints: number[]; // todo
+  lastSaved: string;
   props: string[] // todo
 }
-
 export interface User {
   uid: string;
   workspaceName: string;
+  nextGid: 0;
 }
 
 export interface Private {

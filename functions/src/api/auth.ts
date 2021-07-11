@@ -80,6 +80,7 @@ const createFirebaseAccount = async (
       user.set({
         uid,
         workspaceName,
+        nextGid: 0,
       });
     }
   });

@@ -1,4 +1,4 @@
-import { styled } from "@material-ui/core";
+import { styled, Theme, withTheme } from "@material-ui/core";
 import React from "react";
 
 export const injectProps =
@@ -26,3 +26,13 @@ export const FlexColumn = styled("div")({
   flexDirection: "column",
   alignItems: "center",
 });
+
+export const WrapGrid = withTheme(
+  styled("div")(({ theme, colWidth }: { theme: Theme; colWidth: string }) => ({
+    display: "grid",
+    gridTemplateColumns: `repeat(auto-fit, minmax(${colWidth}, max-content))`,
+    gap: theme.spacing(3),
+    flex: 1,
+    justifyContent: "center",
+  }))
+);

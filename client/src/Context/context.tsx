@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, ReactNode } from "react";
-import { getData, User as FirestoreUser } from "common";
+import { getData, Graph, User as FirestoreUser } from "common";
 import firebase from "firebase";
 import { useHistory, useLocation } from "react-router-dom";
 import useFunState, { FunState, mockState } from "fun-state";
@@ -19,6 +19,10 @@ export interface Auth {
 interface Context {
   auth: Auth;
   mode: "light" | "dark";
+  graphs: {
+    preview: boolean;
+    all: Graph[];
+  };
 }
 
 export type Mode = "dark" | "light";
@@ -32,12 +36,16 @@ const initialState: Context = {
     isLoading: false,
   },
   mode: initMode ?? "light",
+  graphs: {
+    preview: true,
+    all: [],
+  },
 };
 
 // turns a firebase auth user into the structure the application needs using a db call
 export const consumeUser = async (
   user: firebase.User | null
-): Promise<User | null> => {
+): Promise<{ user: User; graphs: Context["graphs"] } | null> => {
   console.log("CONSUME");
   if (user === null) return null;
   const dbUser: FirestoreUser | undefined = await getData(
@@ -45,10 +53,20 @@ export const consumeUser = async (
     user.uid
   );
   if (!dbUser) return null;
+  const previewGraphsSnap = await firestore
+    .graphs(user.uid)
+    .orderBy("lastSaved", "desc")
+    .limit(3)
+    .get();
+  const previewGraphs = previewGraphsSnap.docs.map((doc) => doc.data());
   return {
-    uid: user.uid,
-    workspaceName: user.displayName ?? user.uid.slice(0, 8),
-    workspaceIcon: user.photoURL,
+    user: {
+      uid: user.uid,
+      workspaceName: user.displayName ?? user.uid.slice(0, 8),
+      workspaceIcon: user.photoURL,
+      nextGid: dbUser.nextGid,
+    },
+    graphs: { preview: true, all: previewGraphs },
   };
 };
 
@@ -63,6 +81,7 @@ export const GlobalProvider = ({
 }): JSX.Element => {
   const state = useFunState<Context>(initialState);
   const { mode } = state.get();
+  const graphState = state.prop("graphs").get();
   const { currentUser } = authService;
   const location = useLocation();
   const history = useHistory();
@@ -70,12 +89,20 @@ export const GlobalProvider = ({
   useEffect(() => {
     if (currentUser !== null) {
       state.prop("auth").prop("isLoading").set(true);
-      consumeUser(currentUser).then((user) => {
-        state.prop("auth").set({
-          loggedIn: user !== null,
-          user,
-          isLoading: false,
-        });
+      consumeUser(currentUser).then((res) => {
+        const { user, graphs } = res ?? {
+          user: null,
+          graphs: initialState.graphs,
+        };
+        state.mod((s) => ({
+          ...s,
+          auth: {
+            loggedIn: user !== null,
+            user,
+            isLoading: false,
+          },
+          graphs,
+        }));
       });
     }
   }, []);
@@ -90,12 +117,20 @@ export const GlobalProvider = ({
       authService
         .signInWithCustomToken(token)
         .then((userCredential) => consumeUser(userCredential.user))
-        .then((user) => {
-          state.prop("auth").set({
-            loggedIn: user !== null,
-            user,
-            isLoading: false,
-          });
+        .then((res) => {
+          const { user, graphs } = res ?? {
+            user: null,
+            graphs: initialState.graphs,
+          };
+          state.mod((s) => ({
+            ...s,
+            auth: {
+              loggedIn: user !== null,
+              user,
+              isLoading: false,
+            },
+            graphs,
+          }));
         });
 
       history.replace({ search: queryParams.toString() });
@@ -105,6 +140,20 @@ export const GlobalProvider = ({
   useEffect(() => {
     setUserStore("previewMode", localStorage, mode);
   }, [mode]);
+
+  useEffect(() => {
+    console.log("hi");
+    if (currentUser && !graphState.preview) {
+      const unsubscribe = firestore
+        .graphs(currentUser.uid)
+        .onSnapshot((snap) => {
+          console.log("new snapshot:");
+          snap.docChanges().map((change) => console.log(change.doc.data()));
+        });
+      return unsubscribe;
+    }
+    return () => {};
+  }, [currentUser?.uid, graphState.preview]);
 
   // for debugging :))
   useEffect(() => {

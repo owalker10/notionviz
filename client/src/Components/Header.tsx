@@ -20,6 +20,7 @@ import useWindowSize from "../hooks/useWindowSize";
 import Menu from "./Menu";
 import { SkeletonText, SkeletonWithContent } from "./skeleton";
 import { useStore } from "../hooks/useStore";
+import { ellipsis } from "../styles/typography";
 
 const logoBreakpoint = 900;
 const menuBreakpoint = 750;
@@ -71,9 +72,7 @@ const useStyles = makeStyles((theme) => ({
   workspaceName: {
     marginRight: theme.spacing(2),
     maxWidth: "180px",
-    overflow: "hidden",
-    whiteSpace: "nowrap",
-    textOverflow: "ellipsis",
+    ...ellipsis,
   },
   menuContainer: {
     width: "250px",
@@ -113,10 +112,7 @@ const useStyles = makeStyles((theme) => ({
   menuWorkspaceName: {
     fontSize: "16px",
     paddingLeft: theme.spacing(1),
-    overflow: "hidden",
-    whiteSpace: "nowrap",
-    textOverflow: "ellipsis",
-    height: "1.25em",
+    ...ellipsis,
   },
 }));
 

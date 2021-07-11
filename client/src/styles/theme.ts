@@ -1,4 +1,5 @@
 import { createTheme, responsiveFontSizes } from "@material-ui/core/styles";
+import { CSSProperties } from "react";
 
 // useTheme hook will give you this in a FC
 // use makeStyles to generate a useStyles hook
@@ -16,12 +17,15 @@ const theme = createTheme({
     text: {
       primary: "#37352F",
       secondary: "#7B7974",
+      hint: "#AEACA8",
     },
     background: {
       default: "#FFFFFF",
     },
     grey: {
+      100: "#FAFAFA",
       200: "#E5E5E5",
+      300: "#D2D2D2",
     },
     divider: "#E5E5E5", // light neutral grey
   },
@@ -63,6 +67,13 @@ const theme = createTheme({
         },
       },
     },
+    MuiListItemIcon: {
+      root: {
+        minWidth: 0,
+        marginRight: "16px",
+        color: "#AEACA8",
+      },
+    },
   },
 });
 
@@ -71,3 +82,14 @@ const responsiveTheme = responsiveFontSizes(theme);
 export default responsiveTheme;
 
 export const mobileBreakpointWidth = "480px";
+
+export const dottedBorder = (
+  color: string,
+  length: string,
+  width = "1px"
+): CSSProperties => ({
+  backgroundImage: `linear-gradient(to right, ${color} 0%, ${color} 50%, transparent 50%, transparent 100%), linear-gradient(${color} 0%, ${color} 50%, transparent 50%, transparent 100%), linear-gradient(to right, ${color} 0%, ${color} 50%, transparent 50%, transparent 100%), linear-gradient(${color} 0%, ${color} 50%, transparent 50%, transparent 100%)`,
+  backgroundPosition: "top, right, bottom, left",
+  backgroundSize: `${length} ${width}, ${width} ${length}`,
+  backgroundRepeat: "repeat-x, repeat-y",
+});
