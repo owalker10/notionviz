@@ -27,5 +27,4 @@ export type AnyProperty = Property<PropertyType>;
 
 export interface Database {
   title: string,
-
 };

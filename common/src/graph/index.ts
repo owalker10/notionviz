@@ -1,12 +1,12 @@
-import { AnyProperty } from '../notion/schemas'
+import { AnyProperty } from "../notion/schemas";
 
-export enum GraphType  {
-  bar = 'bar',
-  line = 'line',
-  pie = 'pie',
-  waffle = 'waffle',
-  calendar = 'calendar',
-  heatmap = 'heatmap',
+export enum GraphType {
+  bar = "bar",
+  line = "line",
+  pie = "pie",
+  waffle = "waffle",
+  calendar = "calendar",
+  heatmap = "heatmap",
 }
 
 /* 
@@ -20,23 +20,21 @@ Variables can either be numerical or categorical
   - i.e. Status + COUNT, Genre + AVG(pages) for average page count by genre, etc.
 */
 
-
-
-type VarType = 'categorical' | 'numerical';
+type VarType = "categorical" | "numerical";
 
 interface Variable {
-  type: VarType
+  type: VarType;
 }
 
 // ex: due date: date
 interface Categorical extends Variable {
-  type: 'categorical',
-  property: AnyProperty,
+  type: "categorical";
+  property: AnyProperty;
 }
 
 interface Numerical extends Variable {
-  type: 'numerical',
-  fn: 'COUNT' | 'AVG' | 'SUM'
+  type: "numerical";
+  fn: "COUNT" | "AVG" | "SUM";
 }
 
 // interface Aggregator extends Numerical {
@@ -45,9 +43,13 @@ interface Numerical extends Variable {
 
 abstract class Graph {
   type: GraphType;
+
   x: Variable;
+
   y: Variable;
+
   group?: Variable;
+
   constructor(type: GraphType, x: Variable, y: Variable, group?: Variable) {
     this.type = type;
     this.x = x;
@@ -56,56 +58,59 @@ abstract class Graph {
   }
 
   abstract plot(data: any): any; // data to datapoints
-  abstract getProps(): any;
 
+  abstract getProps(): any;
 }
 
 // @ts-ignore
-const defaults: {[key in keyof typeof GraphType]: null} = Object.fromEntries(Object.keys(GraphType).map((gtype: string) => [gtype as GraphType,null]));
+const defaults: { [key in keyof typeof GraphType]: null } = Object.fromEntries(
+  Object.keys(GraphType).map((gtype: string) => [gtype as GraphType, null])
+);
 
-const getXAlias = (type: GraphType): string => ({
-    [GraphType.pie]: 'arcs',
-    [GraphType.waffle]: 'groups',
-    [GraphType.calendar]: 'days',
-    ...defaults
-  })[type]
-  ?? 'x';
+const getXAlias = (type: GraphType): string =>
+  ({
+    [GraphType.pie]: "arcs",
+    [GraphType.waffle]: "groups",
+    [GraphType.calendar]: "days",
+    ...defaults,
+  }[type] ?? "x");
 
-const getYAlias = (type: GraphType): string =>  ({
-    [GraphType.pie]: 'sizes',
-    [GraphType.waffle]: 'values',
-    [GraphType.calendar]: 'values',
-    ...defaults
-  })[type]
-  ?? 'y';
+const getYAlias = (type: GraphType): string =>
+  ({
+    [GraphType.pie]: "sizes",
+    [GraphType.waffle]: "values",
+    [GraphType.calendar]: "values",
+    ...defaults,
+  }[type] ?? "y");
 
-const getNivoAlias = (type: GraphType, axis: 'x' | 'y' | 'group'): string => ({
-  [GraphType.bar]: {
-    'group': 'id',
-  },
-  [GraphType.line]: {
-    'group': 'id',
-  },
-  [GraphType.pie]: {
-    'x': 'id',
-    'y': 'value'
-  },
-  [GraphType.waffle]: {
-    'x': 'id',
-    'y': 'value'
-  },
-  [GraphType.calendar]: {
-    'x': 'day',
-    'y': 'value'
-  },
-  [GraphType.heatmap]: { // this one is kinda weird-- see https://nivo.rocks/heatmap/
-    
-  },
-})[type]?.[axis] ?? axis;
+const getNivoAlias = (type: GraphType, axis: "x" | "y" | "group"): string =>
+  ({
+    [GraphType.bar]: {
+      group: "id",
+    },
+    [GraphType.line]: {
+      group: "id",
+    },
+    [GraphType.pie]: {
+      x: "id",
+      y: "value",
+    },
+    [GraphType.waffle]: {
+      x: "id",
+      y: "value",
+    },
+    [GraphType.calendar]: {
+      x: "day",
+      y: "value",
+    },
+    [GraphType.heatmap]: {
+      // this one is kinda weird-- see https://nivo.rocks/heatmap/
+    },
+  }[type]?.[axis] ?? axis);
 
 interface Bar extends Graph {
-  type: GraphType.bar,
-  group: Variable, // can require an optional
+  type: GraphType.bar;
+  group: Variable; // can require an optional
 }
 
 // use d3-array !
@@ -132,4 +137,3 @@ interface Bar extends Graph {
 //   rows = rows.where(x == db.x)
 //     y = aggregate(rows) // for row in rows: sum += cost
 //     data.append({id: x, value: y})
-

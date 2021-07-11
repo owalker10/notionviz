@@ -1,3 +1,5 @@
+const { off } = require("process");
+
 module.exports = {
   parser: "@typescript-eslint/parser", // Specifies the ESLint parser
   parserOptions: {
@@ -24,6 +26,7 @@ module.exports = {
     "import/prefer-default-export": "off",
     "no-console": "off",
     "react/prop-types": "off",
+    "react/jsx-props-no-spreading": "off",
   },
   ignorePatterns: ['.eslintrc.js',"**/build/*","**/node_modules/*","**/lib/*","config-overrides.js"]
 }

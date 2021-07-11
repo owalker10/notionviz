@@ -1,13 +1,13 @@
 import { useContext } from "react";
-import { AppContext } from "../Context/context";
+import { AppContext, Mode } from "../Context/context";
 
-export const useMode = (): ["light" | "dark", VoidFunction] => {
-  const { state, dispatch } = useContext(AppContext);
-  if (state === undefined) {
-    throw new Error("useMode must be used within a ContextProvider");
-  }
+export const useMode = (): {
+  mode: Mode;
+  toggleMode: VoidFunction;
+} => {
+  const state = useContext(AppContext).state.prop("mode");
   const toggleMode = () => {
-    dispatch({ type: "TOGGLE_MODE", payload: undefined });
+    state.mod((mode) => (mode === "light" ? "dark" : "light"));
   };
-  return [state.mode, toggleMode];
+  return { mode: state.get(), toggleMode };
 };

@@ -6,7 +6,7 @@ import { CssBaseline } from "@material-ui/core";
 import theme from "./styles/theme";
 import { GlobalProvider } from "./Context/context";
 import MainLayout from "./Components/MainLayout";
-import { Title } from "./styles/typography";
+import Home from "./Views/Home";
 
 // https://reactrouter.com/web/api/Hooks/useparams
 
@@ -21,7 +21,7 @@ const App = (): JSX.Element => {
               <MainLayout>
                 <Switch>
                   <Route exact path="/">
-                    <Title>Welcome to NotionViz!</Title>
+                    <Home />
                   </Route>
                   <Route exact path="/graphs">
                     <div />

@@ -5,6 +5,9 @@ import Header from "./Header";
 const useStyles = makeStyles((theme) => ({
   wrapper: {
     backgroundColor: theme.palette.background.default,
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
   },
   content: {
     boxSizing: "border-box",
@@ -13,6 +16,8 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(5),
     display: "flex",
     flexDirection: "column",
+    alignItems: "center",
+    flexGrow: 1,
   },
 }));
 
@@ -30,5 +35,7 @@ const Layout: FC<{ children: NonNullable<React.ReactNode> }> = ({
     </div>
   );
 };
+
+// todo: feedback
 
 export default Layout;

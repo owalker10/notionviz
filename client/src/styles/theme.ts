@@ -1,11 +1,11 @@
-import { createMuiTheme, responsiveFontSizes } from "@material-ui/core/styles";
+import { createTheme, responsiveFontSizes } from "@material-ui/core/styles";
 
 // useTheme hook will give you this in a FC
 // use makeStyles to generate a useStyles hook
 
 // overrides: https://material-ui.com/customization/globals/
 
-const theme = createMuiTheme({
+const theme = createTheme({
   palette: {
     primary: {
       main: "#4E90F1", // blue
@@ -30,6 +30,38 @@ const theme = createMuiTheme({
       '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"',
     button: {
       textTransform: "none",
+    },
+  },
+  props: {
+    MuiButtonBase: {
+      disableRipple: true,
+    },
+  },
+  overrides: {
+    MuiMenu: {
+      list: {
+        padding: "4px 0 !important",
+      },
+    },
+    MuiIconButton: {
+      root: {
+        padding: "8px",
+        borderRadius: "3px",
+        "&:active": {
+          backgroundColor: "rgba(0,0,0,0.10)",
+        },
+      },
+    },
+    MuiTypography: {
+      root: {
+        "& a": {
+          color: "#37352F",
+          opacity: 0.7,
+          "&:hover": {
+            opacity: 1,
+          },
+        },
+      },
     },
   },
 });

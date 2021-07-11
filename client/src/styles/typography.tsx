@@ -1,46 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { FC } from "react";
-import { makeStyles, Typography, useTheme } from "@material-ui/core";
-import { Variant } from "@material-ui/core/styles/createTypography";
+import { Typography, withStyles } from "@material-ui/core";
+import { injectProps } from "../utils/components";
 
-interface TypeProps {
-  variant: Variant;
-  component?: React.ElementType;
-  className: "title";
-}
+export const Title = injectProps(
+  withStyles((theme) => ({
+    root: {
+      color: theme.palette.text.primary,
+      fontWeight: 700,
+      lineHeight: 1.43,
+    },
+  }))(Typography),
+  {
+    variant: "h3",
+    component: "h1",
+  }
+);
 
-interface HelperProps extends TypeProps {
-  [p: string]: any;
-}
-
-const useStyles = makeStyles((theme) => ({
-  title: {
-    color: theme.palette.text.primary,
-    fontWeight: 700,
-  },
-}));
-
-const TypographyHelper: FC<React.PropsWithChildren<HelperProps>> = ({
-  children,
-  className,
-  ...props
-}) => {
-  const styles = useStyles(useTheme());
-  return (
-    <Typography className={styles[className]} {...props}>
-      {children}
-    </Typography>
-  );
-};
-
-const createTypography =
-  (props: TypeProps) =>
-  (anyProps: React.PropsWithChildren<Record<string, any>>) =>
-    <TypographyHelper {...props} {...anyProps} />;
-
-export const Title = createTypography({
-  variant: "h3",
-  className: "title",
-  component: "h1",
-});
+export const EditableTitle = injectProps(
+  withStyles({
+    root: {
+      border: "none",
+      outline: "none !important",
+    },
+  })(Title),
+  { component: "input" }
+);

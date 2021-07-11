@@ -1,8 +1,10 @@
-import React, { createContext, useReducer, useEffect, ReactNode } from "react";
+import React, { createContext, useEffect, ReactNode } from "react";
 import { getData, User as FirestoreUser } from "common";
 import firebase from "firebase";
 import { useHistory, useLocation } from "react-router-dom";
+import useFunState, { FunState, mockState } from "fun-state";
 import { auth as authService, firestore } from "../Services/Firebase";
+import { getUserStore, setUserStore } from "../hooks/useStore";
 
 interface User extends FirestoreUser {
   workspaceIcon: string | null;
@@ -11,33 +13,25 @@ interface User extends FirestoreUser {
 export interface Auth {
   loggedIn: boolean;
   user: User | null;
+  isLoading: boolean;
 }
 
 interface Context {
   auth: Auth;
   mode: "light" | "dark";
 }
-type ActionType = "LOGIN" | "LOGOUT" | "TOGGLE_MODE";
 
-type ActionPayload = {
-  LOGIN: { user: User | null };
-  LOGOUT: undefined;
-  TOGGLE_MODE: undefined;
-};
+export type Mode = "dark" | "light";
 
-interface Action<T extends ActionType> {
-  type: T;
-  payload: ActionPayload[T];
-}
-
-const initMode = localStorage.getItem("previewMode");
+const initMode = getUserStore<Mode>("previewMode", localStorage);
 // Initial global state
-const initialState = {
+const initialState: Context = {
   auth: {
     loggedIn: false,
     user: null,
+    isLoading: false,
   },
-  mode: (initMode === "dark" ? "dark" : "light") as "dark" | "light",
+  mode: initMode ?? "light",
 };
 
 // turns a firebase auth user into the structure the application needs using a db call
@@ -46,7 +40,6 @@ export const consumeUser = async (
 ): Promise<User | null> => {
   console.log("CONSUME");
   if (user === null) return null;
-  console.log("users:", firestore.users);
   const dbUser: FirestoreUser | undefined = await getData(
     firestore.users,
     user.uid
@@ -59,45 +52,8 @@ export const consumeUser = async (
   };
 };
 
-const reducer = <T extends ActionType>(
-  state: Context,
-  action: Action<T>
-): Context => {
-  switch (action.type) {
-    case "LOGIN": {
-      const user = action.payload?.user ?? null;
-      return {
-        ...state,
-        auth: {
-          loggedIn: user !== null,
-          user,
-        },
-      };
-    }
-    case "LOGOUT":
-      return {
-        ...state,
-        auth: {
-          loggedIn: false,
-          user: null,
-        },
-      };
-    case "TOGGLE_MODE":
-      return {
-        ...state,
-        mode: state.mode === "light" ? "dark" : "light",
-      };
-    default:
-      return state;
-  }
-};
-
-export const AppContext = createContext<{
-  state: Context;
-  dispatch: <A extends ActionType>(a: Action<A>) => void;
-}>({
-  state: initialState,
-  dispatch: () => null,
+export const AppContext = createContext<{ state: FunState<Context> }>({
+  state: mockState(initialState),
 });
 
 export const GlobalProvider = ({
@@ -105,18 +61,20 @@ export const GlobalProvider = ({
 }: {
   children: ReactNode;
 }): JSX.Element => {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const { mode } = state;
+  const state = useFunState<Context>(initialState);
+  const { mode } = state.get();
   const { currentUser } = authService;
   const location = useLocation();
   const history = useHistory();
   // this should just be if there's auth persistence from another session
   useEffect(() => {
     if (currentUser !== null) {
+      state.prop("auth").prop("isLoading").set(true);
       consumeUser(currentUser).then((user) => {
-        dispatch({
-          type: "LOGIN",
-          payload: { user },
+        state.prop("auth").set({
+          loggedIn: user !== null,
+          user,
+          isLoading: false,
         });
       });
     }
@@ -127,14 +85,16 @@ export const GlobalProvider = ({
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get("token");
     if (token) {
+      state.prop("auth").prop("isLoading").set(true);
       queryParams.delete("token");
       authService
         .signInWithCustomToken(token)
         .then((userCredential) => consumeUser(userCredential.user))
         .then((user) => {
-          dispatch({
-            type: "LOGIN",
-            payload: { user },
+          state.prop("auth").set({
+            loggedIn: user !== null,
+            user,
+            isLoading: false,
           });
         });
 
@@ -143,17 +103,16 @@ export const GlobalProvider = ({
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("previewMode", JSON.stringify(mode));
+    setUserStore("previewMode", localStorage, mode);
   }, [mode]);
 
+  // for debugging :))
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development")
+      Object.assign(window, { state });
+  }, [state]);
+
   return (
-    <AppContext.Provider
-      value={{
-        state,
-        dispatch,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
+    <AppContext.Provider value={{ state }}>{children}</AppContext.Provider>
   );
 };
