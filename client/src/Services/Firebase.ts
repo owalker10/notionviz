@@ -21,7 +21,9 @@ if (
 )
   firebase.auth().useEmulator("http://localhost:9099");
 
-export const auth = firebase.auth();
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+export const { auth } = firebase;
 export const firestore = asTypedDb(
   firebase.firestore(),
   process.env.NODE_ENV === "development" ||

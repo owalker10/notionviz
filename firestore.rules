@@ -4,7 +4,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // users can read their own metadata but not write
     match /users/{uid} {
-      allow read: if request.auth.uid == uid;
+      allow read, write: if request.auth.uid == uid;
 
       // users can read/write their own graphs and if public is true, anyone can read the graph
       match /graphs/{gid} {

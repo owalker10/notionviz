@@ -40,6 +40,10 @@ export const setUserStore = <T>(
   store.setItem(`User::${key}`, JSON.stringify(value));
 };
 
+export const removeUserStore = (key: string, store: Storage): void => {
+  store.removeItem(`User::${key}`);
+};
+
 export const clearUserStore = (): void => {
   [localStorage, sessionStorage].forEach((store) => {
     for (let i = 0; i < store.length; i += 1) {

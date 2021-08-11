@@ -22,6 +22,7 @@ import { ContentHeader, ellipsis } from "../styles/typography";
 import { SkeletonText, SkeletonWithContent } from "./skeleton";
 import { FlexColumn } from "../utils/components";
 import Menu from "./Menu";
+import { toWebPath } from "../utils/routes";
 
 export const cardDim = "200px";
 
@@ -136,7 +137,10 @@ export const GraphCard: FC<{
             </IconButton>
           }
         />
-        <Link to={`/graphs/${gid}`} style={{ textDecoration: "none" }}>
+        <Link
+          to={toWebPath(`/graphs/${gid}`)}
+          style={{ textDecoration: "none" }}
+        >
           <CardContent className={styles.content}>
             <SkeletonWithContent
               className={styles.icon}

@@ -1,7 +1,8 @@
 import { Graph as GraphBase } from "../graph";
 
 export interface Graph extends GraphBase {
-  gid: string;
+  name: string,
+  gid: number;
   db: string;
   public: boolean;
   lastSaved: string;
@@ -10,7 +11,7 @@ export interface Graph extends GraphBase {
 export interface User {
   uid: string;
   workspaceName: string;
-  nextGid: 0;
+  nextGid: number;
 }
 
 export interface Private {

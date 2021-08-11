@@ -1,6 +1,7 @@
 import React from "react";
 import { makeStyles, Typography, useTheme } from "@material-ui/core";
 import { GraphType } from "common/lib/graph";
+import { Graph } from "common/lib/firestore/schemas";
 import { SecondaryButton } from "../Components/buttons";
 import { PrimaryLink, Title } from "../styles/typography";
 import { authRedirectURL, useAuth } from "../hooks/useAuth";
@@ -8,6 +9,9 @@ import cube from "../assets/logo_cube.svg";
 import { FlexColumn, WrapGrid } from "../utils/components";
 import { cardDim, CreateGraph, GraphCard } from "../Components/GraphCard";
 import { range } from "../utils/array";
+import { useGraphs } from "../hooks/useGraphs";
+import useTitle from "../hooks/useTitle";
+import { toWebPath } from "../utils/routes";
 
 const useStyles = makeStyles((theme) => ({
   content: {
@@ -74,10 +78,25 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const mockGraph = (gid: number): Graph => ({
+  name: `Test Graph ${gid}`,
+  gid,
+  db: "My Database",
+  public: false,
+  lastSaved: new Date(Date.now()).toISOString(),
+  props: [],
+  type: GraphType.bar,
+  x: { type: "categorical" },
+  y: { type: "numerical" },
+});
+
 export default (): React.ReactElement => {
-  const { loggedIn, isLoading, user } = useAuth().auth.get();
+  const { loggedIn, isLoading: authLoading, user } = useAuth().auth.get();
   const newGraphURL = user ? `/edit/${user.nextGid.toString()}` : "";
   const styles = useStyles(useTheme());
+  const { graphs, set, isLoading: graphsLoading } = useGraphs({ limit: 3 });
+  const isLoading = authLoading || graphsLoading;
+  useTitle("Home");
   return (
     <FlexColumn className={styles.content}>
       <FlexColumn className={styles.logoContainer}>
@@ -91,24 +110,29 @@ export default (): React.ReactElement => {
           <WrapGrid colWidth={cardDim}>
             <div className={styles.graphsHeader}>
               <Typography>Recent graphs</Typography>
-              <PrimaryLink to="/graphs">See all</PrimaryLink>
+              <PrimaryLink to={toWebPath("/graphs")}>See all</PrimaryLink>
             </div>
             {isLoading
               ? range(3).map((n) => <GraphCard isLoading key={n} />)
               : [
-                  <GraphCard
-                    gid={1}
-                    name="My Graph"
-                    databaseName="My Database"
-                    type={GraphType.bar}
+                  ...graphs.map((g) => (
+                    <GraphCard
+                      gid={g.gid}
+                      name={g.name}
+                      databaseName={g.db}
+                      type={g.type}
+                    />
+                  )),
+                  <CreateGraph to={toWebPath(newGraphURL)} />,
+                  // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+                  <div
+                    onClick={() => set(mockGraph(user?.nextGid ?? -1))}
+                    style={{
+                      width: "100px",
+                      height: "100px",
+                      background: "black",
+                    }}
                   />,
-                  <GraphCard
-                    gid={1}
-                    name="My Graph"
-                    databaseName="My Database"
-                    type={GraphType.bar}
-                  />,
-                  <CreateGraph to={newGraphURL} />,
                 ]}
           </WrapGrid>
         </div>

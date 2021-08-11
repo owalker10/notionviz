@@ -5,7 +5,7 @@ import { DatabasesQueryResponse, SearchResponse } from '@notionhq/client/build/s
 import { Database as NotionDB, Page as NotionPage } from '@notionhq/client/build/src/api-types';
 import { ClientOptions } from '@notionhq/client/build/src/Client';
 
-// IMPORTANT: important this into the React client causes a crash
+// IMPORTANT: importing this into the React client causes a crash
 
 let client = new Client();
 
@@ -40,7 +40,7 @@ export const read = async (database_id: string) => {
       database_id,
       start_cursor,
     })
-    pages.concat(results.results as NotionPage[]); // change this to schemas.ts Database
+    pages.push(...results.results); // change this to schemas.ts Database
     has_more = results.has_more;
     start_cursor = results.next_cursor ?? undefined;
   }

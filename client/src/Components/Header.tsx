@@ -21,6 +21,7 @@ import Menu from "./Menu";
 import { SkeletonText, SkeletonWithContent } from "./skeleton";
 import { useStore } from "../hooks/useStore";
 import { ellipsis } from "../styles/typography";
+import { toWebPath } from "../utils/routes";
 
 const logoBreakpoint = 900;
 const menuBreakpoint = 750;
@@ -117,7 +118,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const tabs = (className = "") => [
-  <Link className={className} to="/graphs">
+  <Link className={className} to={toWebPath("/graphs")}>
     My Graphs
   </Link>,
   <a className={className} href={faq}>
@@ -157,7 +158,7 @@ const Header: FC = () => {
         className={styles.appBar}
       >
         <Toolbar className={styles.container}>
-          <Link className={styles.logo} to="/">
+          <Link className={styles.logo} to={toWebPath("")}>
             <img src={cube} height="40px" alt="logo" />
             {width && width > logoBreakpoint ? (
               <img src={logoText} height="22px" alt="NotionViz" />

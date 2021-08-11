@@ -1,12 +1,16 @@
-import React from "react";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import React, { lazy, Suspense } from "react";
+import {
+  BrowserRouter as Router,
+  Redirect,
+  Route,
+  Switch,
+} from "react-router-dom";
 import "./App.css";
 import { ThemeProvider } from "@material-ui/core/styles";
 import { CssBaseline } from "@material-ui/core";
 import theme from "./styles/theme";
 import { GlobalProvider } from "./Context/context";
-import MainLayout from "./Components/MainLayout";
-import Home from "./Views/Home";
+import { embedPath, webPath } from "./utils/routes";
 
 // https://reactrouter.com/web/api/Hooks/useparams
 
@@ -18,22 +22,25 @@ const App = (): JSX.Element => {
         <CssBaseline>
           <Router>
             <GlobalProvider>
-              <MainLayout>
+              {/* use code-splitting for web-based pages and embed page since one client is not likely to render both */}
+              {/* todo: fallback element */}
+              <Suspense fallback={<div>Loading...</div>}>
                 <Switch>
                   <Route exact path="/">
-                    <Home />
+                    <Redirect to={`/${webPath}`} />
                   </Route>
-                  <Route exact path="/graphs">
-                    <div />
-                  </Route>
-                  <Route exact path="/edit/:gid">
-                    <div />
-                  </Route>
-                  <Route exact path="/embed/:gid">
-                    <div />
-                  </Route>
+                  {/* website pages */}
+                  <Route
+                    path={`/${webPath}`}
+                    component={lazy(() => import("./Routes/Web"))}
+                  />
+                  {/* embed page */}
+                  <Route
+                    path={`/${embedPath}`}
+                    component={lazy(() => import("./Routes/Embed"))}
+                  />
                 </Switch>
-              </MainLayout>
+              </Suspense>
             </GlobalProvider>
           </Router>
         </CssBaseline>
