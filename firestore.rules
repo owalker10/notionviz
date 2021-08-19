@@ -19,7 +19,7 @@ service cloud.firestore {
     // users can publish feedback if they're logged in and submit feedback under their own uid
     match /feedback/{id} {
       allow read: if false;
-      allow write: if request.resource.data.uid == request.auth.uid &&
+      allow create: if request.resource.data.uid == request.auth.uid &&
         request.auth.uid != null;
     }
   }

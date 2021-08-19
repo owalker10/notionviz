@@ -1,8 +1,8 @@
 import { asTypedDb } from "common";
 import express from "express";
-import admin from "firebase-admin";
 import { AuthorizationCode } from "simple-oauth2";
 import crypto from "crypto";
+import admin from "firebase-admin";
 import getEnv from "../env";
 
 const router = express.Router();
@@ -65,14 +65,14 @@ router.get("/redirect", (req, res) => {
 });
 
 const createFirebaseAccount = async (
-  botId: string,
+  workspaceId: string,
   workspaceName: string,
   workspaceIcon: string | null,
   accessToken: string
 ) => {
   // The UID we'll assign to the user.
-  const uid = botId;
-  console.log(botId, workspaceName, workspaceIcon, accessToken);
+  const uid = workspaceId;
+  console.log(workspaceId, workspaceName, workspaceIcon, accessToken);
   // Save the access token to the Firebase Realtime Database.
   const user = db.users.doc(uid);
   const userDatabaseTask = user.get().then((doc) => {
@@ -80,7 +80,7 @@ const createFirebaseAccount = async (
       user.set({
         uid,
         workspaceName,
-        nextGid: 0,
+        passkeys: {},
       });
     }
   });
@@ -161,11 +161,11 @@ router.get("/callback", (req, res) => {
       const accessToken = response.access_token;
       const workspaceName = response.workspace_name;
       const workspaceIcon = response.workspace_icon;
-      const botId = response.bot_id; // this is unique to every workspace! yay!
+      const workspaceId = response.workspace_id;
       // todo throw if these are undefined
       // Create a Firebase account and get the Custom Auth Token.
       createFirebaseAccount(
-        botId,
+        workspaceId,
         workspaceName,
         workspaceIcon,
         accessToken

@@ -4,7 +4,7 @@ import React from "react";
 export const injectProps =
   <E extends React.ElementType>(
     myElement: E,
-    myProps: React.ComponentProps<E> & Record<string, unknown>
+    myProps: Partial<React.ComponentProps<E>> & Record<string, unknown>
   ) =>
   (
     props: React.ComponentProps<E> & Record<string, unknown>
@@ -28,9 +28,9 @@ export const FlexColumn = styled("div")({
 });
 
 export const WrapGrid = withTheme(
-  styled("div")(({ theme, colWidth }: { theme: Theme; colWidth: string }) => ({
+  styled("div")(({ theme, colwidth }: { theme: Theme; colwidth: string }) => ({
     display: "grid",
-    gridTemplateColumns: `repeat(auto-fit, minmax(${colWidth}, max-content))`,
+    gridTemplateColumns: `repeat(auto-fit, minmax(${colwidth}, max-content))`,
     gap: theme.spacing(3),
     flex: 1,
     justifyContent: "center",

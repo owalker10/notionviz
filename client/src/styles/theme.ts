@@ -1,15 +1,16 @@
 import { createTheme, responsiveFontSizes } from "@material-ui/core/styles";
-import { CSSProperties } from "react";
 
 // useTheme hook will give you this in a FC
 // use makeStyles to generate a useStyles hook
 
 // overrides: https://material-ui.com/customization/globals/
 
+const primary = "#4E90F1"; // blue
+
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#4E90F1", // blue
+      main: primary, // blue
     },
     secondary: {
       main: "#F7F6F3", // warm grey
@@ -74,6 +75,34 @@ const theme = createTheme({
         color: "#AEACA8",
       },
     },
+    // look like Notion's
+    MuiSwitch: {
+      root: {
+        height: "24px",
+        width: "44px",
+        padding: 0,
+      },
+      switchBase: {
+        "&:hover": {
+          background: "none !important",
+        },
+        padding: "3px",
+      },
+      thumb: {
+        boxShadow: "none",
+        width: "18px",
+        height: "18px",
+        backgroundColor: "white",
+      },
+      track: {
+        opacity: "1 !important",
+        borderRadius: "100px",
+        backgroundColor: "#DBDAD6",
+        "$checked$checked + &": {
+          backgroundColor: primary,
+        },
+      },
+    },
   },
 });
 
@@ -83,13 +112,4 @@ export default responsiveTheme;
 
 export const mobileBreakpointWidth = "480px";
 
-export const dottedBorder = (
-  color: string,
-  length: string,
-  width = "1px"
-): CSSProperties => ({
-  backgroundImage: `linear-gradient(to right, ${color} 0%, ${color} 50%, transparent 50%, transparent 100%), linear-gradient(${color} 0%, ${color} 50%, transparent 50%, transparent 100%), linear-gradient(to right, ${color} 0%, ${color} 50%, transparent 50%, transparent 100%), linear-gradient(${color} 0%, ${color} 50%, transparent 50%, transparent 100%)`,
-  backgroundPosition: "top, right, bottom, left",
-  backgroundSize: `${length} ${width}, ${width} ${length}`,
-  backgroundRepeat: "repeat-x, repeat-y",
-});
+export const gradient = ["#72A8F8", "#5DD177"] as const;

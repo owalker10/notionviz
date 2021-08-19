@@ -2,16 +2,16 @@ import { Graph as GraphBase } from "../graph";
 
 export interface Graph extends GraphBase {
   name: string,
-  gid: number;
+  id: string;
   db: string;
-  public: boolean;
+  isPublic: boolean;
   lastSaved: string;
   props: string[] // todo
 }
 export interface User {
   uid: string;
   workspaceName: string;
-  nextGid: number;
+  passkeys: Record<string, string>;
 }
 
 export interface Private {
@@ -23,11 +23,13 @@ export interface Feedback {
   uid: string;
   name: string;
   type: FeedbackType;
-  time: Date;
+  time: string;
   content: string;
 }
 
-enum FeedbackType {
-  bug = 'bug',
-  suggestion = 'feature suggestion'
+export enum FeedbackType {
+  bug = 'Bug Report',
+  suggestion = 'Feature Suggestion',
+  question = 'Question',
+  other = 'Other',
 }

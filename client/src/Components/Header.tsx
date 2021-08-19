@@ -117,17 +117,33 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const tabs = (className = "") => [
-  <Link className={className} to={toWebPath("/graphs")}>
-    My Graphs
-  </Link>,
-  <a className={className} href={faq}>
-    About
-  </a>,
-  <a className={className} href={faq}>
-    Examples
-  </a>,
-];
+const tabs = (loggedIn: boolean, className = "") => {
+  const t = [
+    <Link className={className} to={toWebPath("/graphs")} key="graphs">
+      My Graphs
+    </Link>,
+    <a
+      className={className}
+      href={faq}
+      key="about"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      About
+    </a>,
+    <a
+      className={className}
+      href={faq}
+      key="examples"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Examples
+    </a>,
+  ];
+  if (!loggedIn) t.splice(0, 1);
+  return t;
+};
 
 const Header: FC = () => {
   const { auth, logout } = useAuth();
@@ -166,7 +182,7 @@ const Header: FC = () => {
           </Link>
           {/* nav tabs */}
           {width && width > menuBreakpoint ? (
-            <div className={styles.tabs}>{tabs(styles.tab)}</div>
+            <div className={styles.tabs}>{tabs(loggedIn, styles.tab)}</div>
           ) : null}
           <div className={styles.profile}>
             {/* width width - workspace name and icon */}
@@ -238,14 +254,17 @@ const Header: FC = () => {
                     </div>
                     <Divider />
                     <List className={styles.menuNavList}>
-                      {tabs().map((tabElement) => (
+                      {tabs(loggedIn).map((tabElement) => (
                         <MenuItem
                           divider
                           className={styles.navMenuItem}
                           component={tabElement.type}
                           href={tabElement.props.href}
                           to={tabElement.props.to}
-                          key={tabElement.props.href ?? tabElement.props.to}
+                          key={tabElement.key}
+                          {...(tabElement.props.href
+                            ? { target: "_blank", rel: "noopener noreferrer" }
+                            : { onClick: () => setDrawerOpen(false) })}
                         >
                           {tabElement.props.children}
                         </MenuItem>

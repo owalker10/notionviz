@@ -9,7 +9,7 @@
         "serve-host": "export REACT_APP_HOST=true && yarn build && firebase emulators:start --only functions,firestore,auth,hosting --import=./local_data --export-on-exit",
         "build-frontend": "yarn workspace client build",
         "build-server": "yarn workspace functions build",
-        "build-lib": "yarn workspace common build", 
+        "build-lib": "yarn workspace common build",
         "build": "yarn build-lib && yarn build-frontend && yarn build-server",
         "deploy": "yarn workspace functions loadenv && firebase deploy --only functions,hosting",
         "build-and-deploy": "yarn build && yarn deploy",
@@ -24,7 +24,11 @@
         "node": "14"
     },
     "workspaces": {
-        "packages": ["common", "client", "functions"],
+        "packages": [
+            "common",
+            "client",
+            "functions"
+        ],
         "nohoist": [
             "functions/common",
             "functions/**"

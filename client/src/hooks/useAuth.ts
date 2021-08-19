@@ -8,7 +8,6 @@ import { clearUserStore } from "./useStore";
 export const useAuth = (): {
   logout: VoidFunction;
   auth: FunState<Auth>;
-  incrementGid: VoidFunction;
 } => {
   const authState = useContext(AppContext).state.prop("auth");
   const logout = () => {
@@ -16,11 +15,8 @@ export const useAuth = (): {
     authState.prop("isLoading").set(true);
     authService().signOut();
   };
-  const incrementGid = () =>
-    authState
-      .prop("user")
-      .mod((u) => (u ? { ...u, nextGid: u.nextGid + 1 } : u));
-  return { auth: authState, logout, incrementGid };
+
+  return { auth: authState, logout };
 };
 
 export const authRedirectURL = `${

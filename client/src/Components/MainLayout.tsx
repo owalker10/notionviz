@@ -1,6 +1,7 @@
 import React, { FC } from "react";
-import { Container, makeStyles, useTheme } from "@material-ui/core";
+import { Container, makeStyles, useTheme, withStyles } from "@material-ui/core";
 import Header from "./Header";
+import { FeedbackTab } from "./feedback";
 
 const useStyles = makeStyles((theme) => ({
   wrapper: {
@@ -9,7 +10,24 @@ const useStyles = makeStyles((theme) => ({
     display: "flex",
     flexDirection: "column",
   },
-  content: {
+}));
+
+const Layout: FC<{
+  children: NonNullable<React.ReactNode>;
+}> = ({ children }) => {
+  const styles = useStyles(useTheme());
+  return (
+    <div className={styles.wrapper}>
+      <Header />
+      {/* https://material-ui.com/customization/breakpoints/#breakpoints */}
+      {children}
+      <FeedbackTab />
+    </div>
+  );
+};
+
+export const ContentContainer = withStyles((theme) => ({
+  root: {
     boxSizing: "border-box",
     MozBoxSizing: "border-box",
     WebkitBoxSizing: "border-box",
@@ -19,22 +37,7 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     flexGrow: 1,
   },
-}));
-
-const Layout: FC<{ children: NonNullable<React.ReactNode> }> = ({
-  children,
-}) => {
-  const styles = useStyles(useTheme());
-  return (
-    <div className={styles.wrapper}>
-      <Header />
-      {/* https://material-ui.com/customization/breakpoints/#breakpoints */}
-      <Container maxWidth="md" className={styles.content}>
-        {children}
-      </Container>
-    </div>
-  );
-};
+}))(Container);
 
 // todo: feedback
 

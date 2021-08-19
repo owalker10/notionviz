@@ -1,23 +1,23 @@
 import { getData } from "common/lib";
 import { Graph } from "common/lib/firestore/schemas";
-import useFunState, { FunState } from "fun-state";
-import { useEffect } from "react";
-import { User } from "../Context/context";
+import { FunState } from "fun-state";
+import { useContext, useEffect } from "react";
+import {
+  AppContext,
+  graphCache,
+  Graphs,
+  Cache,
+  User,
+} from "../Context/context";
 import { firestore } from "../Services/Firebase";
 import { useAuth } from "./useAuth";
-import { getUserStore, setUserStore } from "./useStore";
+import { setUserStore } from "./useStore";
 
-// todo
-// - session storage
+// interface for accessing and modifying graphs
+// data lives in firestore but is cached in session storage
+// can get all graphs, the most recent N graphs, or one graph by graph id
 
-interface Cache {
-  preview: boolean;
-  all: Graph[];
-}
-
-export interface Graphs extends Cache {
-  isLoading: boolean;
-}
+// todo: use localstorage with expiration instead of session storage?
 
 const sortBySavedDescending = (graphs: Graph[]) =>
   graphs.sort((g1, g2) => g2.lastSaved.localeCompare(g1.lastSaved));
@@ -27,6 +27,7 @@ const fetchGraphs = async (
   startAfter: Graph["lastSaved"],
   limit?: number
 ): Promise<Cache> => {
+  console.log(startAfter, limit);
   let query = firestore.graphs(uid).orderBy("lastSaved", "desc");
   if (startAfter) query = query.startAfter(startAfter);
   if (limit) query = query.limit(limit);
@@ -39,11 +40,7 @@ const fetchGraphs = async (
     }));
 };
 
-const fetchGraph = async (uid: string, gid: number): Promise<Graph | null> => {
-  // const cachedGraphs = getUserStore<Graphs>("graphs", sessionStorage);
-  // const cachedGraph =
-  //   cachedGraphs && cachedGraphs?.all?.filter((g) => g.gid === gid)?.[0];
-  // if (cachedGraph) return cachedGraph;
+const fetchGraph = async (uid: string, gid: string): Promise<Graph | null> => {
   return getData<Graph>(firestore.graphs(uid), gid.toString()).then(
     (graph) => graph ?? null
   );
@@ -51,21 +48,23 @@ const fetchGraph = async (uid: string, gid: number): Promise<Graph | null> => {
 
 // create or update
 const setGraph = async (state: FunState<Graphs>, graph: Graph, user: User) => {
+  console.log(graph);
   const all = state.prop("all").get();
-  const { gid } = graph;
+  const { id } = graph;
   state.prop("all").mod((original) => {
     const graphs = [...original];
-    const idx = all.findIndex((g) => g.gid === graph.gid);
+    const idx = all.findIndex((g) => g.id === graph.id);
     if (idx > -1) {
       graphs[idx] = graph;
     } else {
       graphs.push(graph);
     }
     sortBySavedDescending(graphs);
+    console.log("graphs", graphs);
     return graphs;
   });
-  setUserStore("graphs", sessionStorage, { ...state.get(), all });
-  return firestore.graphs(user.uid).doc(gid.toString()).set(graph);
+  setUserStore("graphs", sessionStorage, state.get());
+  return firestore.graphs(user.uid).doc(id.toString()).set(graph);
 };
 
 const deleteGraph = async (
@@ -74,17 +73,20 @@ const deleteGraph = async (
   user: User
 ) => {
   const all = state.prop("all").get();
-  const { gid } = graph;
-  const idx = all.findIndex((g) => g.gid === graph.gid);
-  all.splice(idx, 1);
+  const { id } = graph;
+  const idx = all.findIndex((g) => g.id === graph.id);
 
+  state.prop("all").mod((original) => {
+    const newAll = [...original];
+    newAll.splice(idx, 1);
+    return newAll;
+  });
   return firestore
     .graphs(user.uid)
-    .doc(gid.toString())
+    .doc(id.toString())
     .delete()
     .then(() => {
-      state.prop("all").set(all);
-      setUserStore("graphs", sessionStorage, { ...state.get(), all });
+      setUserStore("graphs", sessionStorage, state.get());
 
       const restore = () => {
         setGraph(state, graph, user);
@@ -94,20 +96,11 @@ const deleteGraph = async (
     });
 };
 
-export enum GraphAction {
-  FetchGraph = "fetchGraph",
-  FetchGraphs = "fetchGraphs",
-  SetGraph = "setGraph",
-  DeleteGraph = "deleteGraph",
-}
-
-const initState = {
-  preview: true,
-  all: [],
-};
-
-const initCachedState = (user: User | null): Cache =>
-  user ? getUserStore<Cache>("graphs", sessionStorage) ?? initState : initState;
+const cacheResults = (results: Cache) =>
+  setUserStore("graphs", sessionStorage, {
+    all: results.all,
+    preview: results.preview,
+  });
 
 const emptyPromise = <T>(val?: T) => new Promise<T>(val ? () => val : () => {});
 
@@ -116,29 +109,30 @@ export const useGraphs = ({
   gid,
 }: {
   limit?: number;
-  gid?: number;
+  gid?: string;
 }): {
   graphs: Graph[];
   set: (g: Graph) => Promise<void>;
-  delete: (g: Graph) => Promise<VoidFunction>;
+  remove: (g: Graph) => Promise<VoidFunction>;
   isLoading: boolean;
 } => {
-  const { auth, incrementGid } = useAuth();
+  const { auth } = useAuth();
   const { user } = auth.get();
-  const state = useFunState<Graphs>({
-    ...initCachedState(user),
-    isLoading: false,
-  });
+  const state = useContext(AppContext).state.prop("graphs");
 
-  const { all, preview } = state.get();
+  const { all: allGraphs } = state.get();
 
   // fetch from firestore
   useEffect(() => {
+    // this should do nothing after the first time the cache is fetched
+    if (user) state.mod((s) => ({ ...s, ...graphCache() }));
+    const { all, preview } = state.get();
     // gid is specified so we want 1 graph
     if (user && gid) {
-      const graph = all.filter((g) => g.gid === gid)[0];
+      const graph = all.filter((g) => g.id === gid)[0];
       if (!graph) {
         state.prop("isLoading").set(true);
+        console.log("fetch one");
         fetchGraph(user.uid, gid)
           .then((newGraph) => {
             if (newGraph) {
@@ -152,6 +146,7 @@ export const useGraphs = ({
                   isLoading: false,
                 };
               });
+              cacheResults(state.get());
             }
           })
           .catch((err) => {
@@ -163,7 +158,12 @@ export const useGraphs = ({
       if (preview && ((limit && all.length < limit) || !limit)) {
         const startAfter = all[all.length - 1]?.lastSaved ?? "";
         state.prop("isLoading").set(true);
-        fetchGraphs(user.uid, startAfter, limit).then((graphs) => {
+        console.log("fetch many");
+        fetchGraphs(
+          user.uid,
+          startAfter,
+          limit ? limit - all.length : undefined
+        ).then((graphs) => {
           state.mod((s) => {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const { all: all_ } = s;
@@ -174,14 +174,15 @@ export const useGraphs = ({
               isLoading: false,
             };
           });
+          cacheResults(state.get());
         });
       }
     }
   }, [limit, gid, user?.uid]);
 
-  useEffect(() => {
-    console.log("changed", state);
-  }, [state]);
+  // useEffect(() => {
+  //   console.log("changed", state);
+  // }, [state]);
 
   // for debugging :))
   useEffect(() => {
@@ -189,21 +190,13 @@ export const useGraphs = ({
       Object.assign(window, { graphs: state });
   }, [state]);
 
-  const graphs = gid ? all.filter((g) => g.gid === gid) : all.slice(0, limit);
+  const graphs = gid
+    ? allGraphs.filter((g) => g.id === gid)
+    : allGraphs.slice(0, limit);
 
   const set = (graph: Graph) => {
     if (user) {
-      // eslint-disable-next-line consistent-return
-      return setGraph(state, graph, user).then(() => {
-        if (user.nextGid === graph.gid) {
-          return firestore.users
-            .doc(user.uid)
-            .update({ nextGid: user.nextGid + 1 })
-            .then(() => {
-              incrementGid();
-            });
-        }
-      });
+      return setGraph(state, graph, user);
     }
     return emptyPromise<void>();
   };
@@ -219,7 +212,7 @@ export const useGraphs = ({
   return {
     graphs,
     set,
-    delete: remove,
+    remove,
     isLoading: state.prop("isLoading").get(),
   };
 };

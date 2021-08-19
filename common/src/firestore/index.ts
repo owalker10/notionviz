@@ -12,7 +12,7 @@ import admin from "firebase-admin";
 // |     |--- "graphs" subcollection (Graph)
 // |     |--- "private" subcollection (documents are keys in Private)
 // |
-// |--- "feedback collection" (Feedback)
+// |--- "feedback" collection (Feedback)
 //
 // ** for the private subcollection, there is one document corresponding to each member in the Private interface
 //    and each of those documents contain one member of the same name as the document

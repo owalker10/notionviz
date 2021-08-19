@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-unused-vars */
-import React, { FC } from "react";
+import React, { FC, useState } from "react";
 import {
   Card,
   CardContent,
@@ -11,18 +11,26 @@ import {
   MenuItem,
   Typography,
   useTheme,
+  Snackbar,
+  Button,
 } from "@material-ui/core";
+import { Alert } from "@material-ui/lab";
 import { GraphType } from "common/lib/graph";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { Link } from "react-router-dom";
 import CodeIcon from "@material-ui/icons/Code";
 import DeleteIcon from "@material-ui/icons/Delete";
+import CloseIcon from "@material-ui/icons/Close";
+import { Graph } from "common/lib/firestore/schemas";
+import useFunState, { FunState } from "fun-state";
 import BarIcon from "../assets/graph-icons/bar.svg";
 import { ContentHeader, ellipsis } from "../styles/typography";
 import { SkeletonText, SkeletonWithContent } from "./skeleton";
 import { FlexColumn } from "../utils/components";
 import Menu from "./Menu";
 import { toWebPath } from "../utils/routes";
+import { useGraphs } from "../hooks/useGraphs";
+import EmbedDialog from "./EmbedDialog";
 
 export const cardDim = "200px";
 
@@ -60,11 +68,21 @@ const useStyles = makeStyles((theme) => ({
   },
   text: {
     alignItems: "flex-start",
-    "& > *": {
+    "& > p": {
       ...ellipsis,
       maxWidth: "100%",
     },
     fontSize: "14px",
+  },
+  name: {
+    display: "flex",
+    alignItems: "flex-end",
+    textAlign: "left",
+    height: "2.86em",
+    overflow: "hidden",
+    "& > *": {
+      maxHeight: "100%",
+    },
   },
   from: {
     fontSize: "14px",
@@ -109,17 +127,22 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const GraphCard: FC<{
-  gid?: number;
-  name?: string;
-  databaseName?: string;
-  type?: GraphType;
+  graph?: Graph;
+  remove?: (g: Graph) => void;
   isLoading?: boolean;
-}> = ({ gid, name, databaseName, type, isLoading }) => {
+}> = ({ graph, remove, isLoading }) => {
   const theme = useTheme();
   const styles = useStyles(theme);
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
     null
   );
+  const embedDialogOpen = useFunState(false);
+  const {
+    id,
+    type,
+    name,
+    db: databaseName,
+  } = graph ?? { id: -1, type: GraphType.bar, name: "", db: "" };
   return (
     <>
       <Card variant="outlined" className={styles.card}>
@@ -137,10 +160,7 @@ export const GraphCard: FC<{
             </IconButton>
           }
         />
-        <Link
-          to={toWebPath(`/graphs/${gid}`)}
-          style={{ textDecoration: "none" }}
-        >
+        <Link to={toWebPath(`/edit/${id}`)} style={{ textDecoration: "none" }}>
           <CardContent className={styles.content}>
             <SkeletonWithContent
               className={styles.icon}
@@ -149,11 +169,14 @@ export const GraphCard: FC<{
               <img src={BarIcon} alt={type} />
             </SkeletonWithContent>
             <FlexColumn className={styles.text}>
-              <ContentHeader>
-                <SkeletonText isLoading={isLoading ?? false} width="8ch">
-                  {name}
-                </SkeletonText>
+              <ContentHeader className={styles.name}>
+                <span>
+                  <SkeletonText isLoading={isLoading ?? false} width="8ch">
+                    {name}
+                  </SkeletonText>
+                </span>
               </ContentHeader>
+
               <Typography className={styles.from} color="textSecondary">
                 <SkeletonText isLoading={isLoading ?? false} width="16ch">
                   <span>From&nbsp;</span>
@@ -174,19 +197,24 @@ export const GraphCard: FC<{
         }}
         getContentAnchorEl={null}
       >
-        <MenuItem>
+        <MenuItem onClick={() => embedDialogOpen.set(true)}>
           <ListItemIcon>
             <CodeIcon fontSize="small" />
           </ListItemIcon>
           <Typography>Embed</Typography>
         </MenuItem>
-        <MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (remove && graph) remove(graph);
+          }}
+        >
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
           </ListItemIcon>
           <Typography>Delete</Typography>
         </MenuItem>
       </Menu>
+      <EmbedDialog graph={graph} state={embedDialogOpen} />
     </>
   );
 };
@@ -200,5 +228,43 @@ export const CreateGraph: FC<{ to: string }> = ({ to }) => {
         New Graph
       </FlexColumn>
     </Link>
+  );
+};
+
+export const DeleteSnackbar: FC<{
+  undo: FunState<(() => VoidFunction) | undefined>;
+}> = ({ undo }) => {
+  const f = undo.get();
+  return (
+    <Snackbar
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal: "center",
+      }}
+      open={Boolean(undo.get())}
+      autoHideDuration={6000}
+      onClose={() => undo.set(undefined)}
+    >
+      <Alert
+        variant="filled"
+        severity="error"
+        icon={<DeleteIcon />}
+        onClose={() => undo.set(undefined)}
+        action={
+          <Button
+            color="secondary"
+            size="small"
+            onClick={() => {
+              if (f) f()();
+              undo.set(undefined);
+            }}
+          >
+            undo
+          </Button>
+        }
+      >
+        Graph deleted
+      </Alert>
+    </Snackbar>
   );
 };

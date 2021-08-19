@@ -3,6 +3,7 @@ import { getData, User as FirestoreUser } from "common";
 import firebase from "firebase";
 import { useHistory, useLocation } from "react-router-dom";
 import useFunState, { FunState, mockState } from "fun-state";
+import { Graph } from "common/lib/firestore";
 import { auth as authService, firestore } from "../Services/Firebase";
 import { getUserStore, setUserStore } from "../hooks/useStore";
 
@@ -15,14 +16,31 @@ export interface Auth {
   isLoading: boolean;
 }
 
+export interface Cache {
+  preview: boolean;
+  all: Graph[];
+}
+
+export interface Graphs extends Cache {
+  isLoading: boolean;
+}
+
 interface Context {
   auth: Auth;
   mode: "light" | "dark";
+  graphs: Graphs;
 }
 
 export type Mode = "dark" | "light";
 
 const initMode = getUserStore<Mode>("previewMode", localStorage);
+export const graphCache = (): Cache => {
+  // console.log("getting cache", getUserStore<Cache>("graphs", sessionStorage));
+  return (
+    getUserStore<Cache>("graphs", sessionStorage) ?? { all: [], preview: true }
+  );
+};
+
 // Initial global state
 const initialState: Context = {
   auth: {
@@ -31,25 +49,36 @@ const initialState: Context = {
     isLoading: true,
   },
   mode: initMode ?? "light",
+  graphs: {
+    ...(getUserStore<Cache>("graphs", sessionStorage) ?? {
+      preview: true,
+      all: [],
+    }),
+    isLoading: false,
+  },
 };
 
 // turns a firebase auth user into the structure the application needs using a db call
 export const consumeUser = async (
   user: firebase.User | null
 ): Promise<User | null> => {
-  console.log("CONSUME");
   if (user === null) return null;
+  const cachedUser = getUserStore<User>("user", sessionStorage);
+  if (cachedUser && cachedUser.uid === user.uid) return cachedUser;
+  console.log("fetch user from database");
   const dbUser: FirestoreUser | undefined = await getData(
     firestore.users,
     user.uid
   );
   if (!dbUser) return null;
-  return {
+  const u = {
     uid: user.uid,
     workspaceName: user.displayName ?? user.uid.slice(0, 8),
     workspaceIcon: user.photoURL,
-    nextGid: dbUser.nextGid,
+    passkeys: dbUser.passkeys,
   };
+  setUserStore("user", sessionStorage, u);
+  return u;
 };
 
 export const AppContext = createContext<{ state: FunState<Context> }>({
@@ -68,7 +97,7 @@ export const GlobalProvider = ({
   // this should just be if there's auth persistence from another session
   useEffect(() => {
     const unsub = authService().onAuthStateChanged((user) => {
-      if (user !== null) {
+      if (user !== null && state.prop("auth").prop("user").get() === null) {
         state.prop("auth").prop("isLoading").set(true);
         consumeUser(user).then((u) => {
           state.prop("auth").set({

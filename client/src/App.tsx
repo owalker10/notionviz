@@ -11,6 +11,7 @@ import { CssBaseline } from "@material-ui/core";
 import theme from "./styles/theme";
 import { GlobalProvider } from "./Context/context";
 import { embedPath, webPath } from "./utils/routes";
+import { FallbackSpinner } from "./Components/spinner";
 
 // https://reactrouter.com/web/api/Hooks/useparams
 
@@ -24,7 +25,7 @@ const App = (): JSX.Element => {
             <GlobalProvider>
               {/* use code-splitting for web-based pages and embed page since one client is not likely to render both */}
               {/* todo: fallback element */}
-              <Suspense fallback={<div>Loading...</div>}>
+              <Suspense fallback={<FallbackSpinner />}>
                 <Switch>
                   <Route exact path="/">
                     <Redirect to={`/${webPath}`} />
@@ -39,6 +40,8 @@ const App = (): JSX.Element => {
                     path={`/${embedPath}`}
                     component={lazy(() => import("./Routes/Embed"))}
                   />
+                  <Route component={FallbackSpinner} />
+                  <Route component={() => <Redirect to={`/${webPath}`} />} />
                 </Switch>
               </Suspense>
             </GlobalProvider>
