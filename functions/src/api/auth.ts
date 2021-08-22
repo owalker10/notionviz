@@ -22,6 +22,8 @@ const credentials = {
   },
 };
 const db = asTypedDb(admin.firestore());
+
+// oauth2 callback uri
 const getRedirectUri = (ref: string) =>
   // eslint-disable-next-line no-nested-ternary
   emulated && !hostEmulated
@@ -29,8 +31,10 @@ const getRedirectUri = (ref: string) =>
     : hostEmulated
     ? `http://localhost:5000/auth/callback`
     : `${ref}auth/callback`;
+
 const client = new AuthorizationCode(credentials);
 
+// start of oauth flow
 router.get("/redirect", (req, res) => {
   req.session.back_to = req.header("Referer");
   // automatically log in to my test Notion workspace to avoid the Notion OAuth flow
@@ -73,7 +77,7 @@ const createFirebaseAccount = async (
   // The UID we'll assign to the user.
   const uid = workspaceId;
   console.log(workspaceId, workspaceName, workspaceIcon, accessToken);
-  // Save the access token to the Firebase Realtime Database.
+  // add user to firestore
   const user = db.users.doc(uid);
   const userDatabaseTask = user.get().then((doc) => {
     if (!doc.exists) {
@@ -84,6 +88,7 @@ const createFirebaseAccount = async (
       });
     }
   });
+  // add the access token as a private field (only the server can read)
   const tokenDoc = db.private(uid).doc("token");
   const tokenDatabaseTask = tokenDoc.get().then((doc) => {
     if (!doc.exists) {
@@ -92,7 +97,7 @@ const createFirebaseAccount = async (
       });
     }
   });
-  // Create or update the user account.
+  // create or update the user account.
   const userCreationTask = admin
     .auth()
     .updateUser(uid, {
@@ -110,7 +115,7 @@ const createFirebaseAccount = async (
       }
       throw error;
     });
-  // Wait for all async task to complete then generate and return a custom auth token.
+  // wait for all async task to complete then generate and return a custom auth token.
   return Promise.all([
     userCreationTask,
     userDatabaseTask,
@@ -136,6 +141,8 @@ const createFirebaseAccount = async (
 //       });
 //     </script>`;
 // }
+
+// ouath callback after successful authentication
 router.get("/callback", (req, res) => {
   console.log("Received state cookie:", req.session.state);
   console.log("Received state query parameter:", req.query.state);
@@ -171,6 +178,7 @@ router.get("/callback", (req, res) => {
         accessToken
       ).then((firebaseToken) => {
         console.log(firebaseToken);
+        // token param is handled by client
         res.redirect(`${req.session.back_to}?token=${firebaseToken}`);
         // res.send(
         //   signInFirebaseTemplate(firebaseToken, req.session.back_to ?? "/")

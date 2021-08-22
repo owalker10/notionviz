@@ -7,14 +7,13 @@ import { ClientOptions } from '@notionhq/client/build/src/Client';
 
 // IMPORTANT: importing this into the React client causes a crash
 
-let client = new Client();
 
-export const config = (auth: string, options: ClientOptions) => { client = new Client({...options, auth}); }
 
 // both of these functions can error!
 
 // list databases (with pagination)
-export const list = async () => {
+export const list = async (auth: string, options: ClientOptions = {}) => {
+  const client = new Client({...options, auth});
   let has_more = true;
   let start_cursor = undefined;
   const databases: NotionDB[] = [];
@@ -31,7 +30,8 @@ export const list = async () => {
 }
 
 // read database (with pagination)
-export const read = async (database_id: string) => {
+export const read = async (database_id: string, auth: string, options: ClientOptions = {}) => {
+  const client = new Client({...options, auth});
   let has_more = true;
   let start_cursor = undefined;
   const pages: NotionPage[] = []; // todo change this to schemas.ts Page

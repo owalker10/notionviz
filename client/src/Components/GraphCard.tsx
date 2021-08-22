@@ -141,7 +141,7 @@ export const GraphCard: FC<{
     id,
     type,
     name,
-    db: databaseName,
+    dbName: databaseName,
   } = graph ?? { id: -1, type: GraphType.bar, name: "", db: "" };
   return (
     <>

@@ -6,10 +6,8 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import session from "firebase-cookie-session"; // to edit session cookie interface see the .d.ts file
 import getEnv from "../env";
-
-// all routes have to be imported after admin is initialized
-// eslint-disable-next-line import/first
 import AuthRoutes from "./auth";
+import NotionRoutes from "./notion";
 
 const emulated = process.env.FUNCTIONS_EMULATOR === "true";
 
@@ -24,6 +22,7 @@ app.use(
   })
 );
 app.use("/auth", AuthRoutes);
+app.use("/notion", NotionRoutes);
 
 const main = express();
 main.use("/api", app);

@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { Container, makeStyles, useTheme, withStyles } from "@material-ui/core";
 import Header from "./Header";
-import { FeedbackTab } from "./feedback";
+import Feedback from "./Feedback";
 
 const useStyles = makeStyles((theme) => ({
   wrapper: {
@@ -21,7 +21,7 @@ const Layout: FC<{
       <Header />
       {/* https://material-ui.com/customization/breakpoints/#breakpoints */}
       {children}
-      <FeedbackTab />
+      <Feedback />
     </div>
   );
 };
@@ -38,7 +38,5 @@ export const ContentContainer = withStyles((theme) => ({
     flexGrow: 1,
   },
 }))(Container);
-
-// todo: feedback
 
 export default Layout;

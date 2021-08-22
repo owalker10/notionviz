@@ -28,7 +28,7 @@ export default functions.firestore
   .document("feedback/{id}")
   .onCreate((snap) => {
     const feedback = snap.data() as Feedback;
-    const viewUrl = `https://console.firebase.google.com/u/0/project/notion-viz/firestore/data/~2Ffeedback~${snap.id}`;
+    const viewUrl = `https://console.firebase.google.com/u/0/project/notion-viz/firestore/data/~2Ffeedback~2F${snap.id}`;
 
     const { name, content, type } = feedback;
     if (!(name && content && type)) {
@@ -45,7 +45,7 @@ export default functions.firestore
 
     const mailOptions = {
       from: serverEmail,
-      subject: "NotionViz feedback received",
+      subject: `${emulated ? "[development] " : ""}NotionViz feedback received`,
       html: `<p>NotionViz has received feedback from <b>${feedback.name}</b> of type <b>${feedback.type}</b>.</p>
       <blockquote><em>${feedback.content}</em></blockquote>
       <p><a href="${viewUrl}">Click here to view in console</a></p>`,

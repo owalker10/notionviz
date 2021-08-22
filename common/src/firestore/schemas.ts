@@ -3,7 +3,8 @@ import { Graph as GraphBase } from "../graph";
 export interface Graph extends GraphBase {
   name: string,
   id: string;
-  db: string;
+  dbName: string;
+  dbId: string;
   isPublic: boolean;
   lastSaved: string;
   props: string[] // todo

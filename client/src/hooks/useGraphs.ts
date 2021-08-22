@@ -18,6 +18,7 @@ import { setUserStore } from "./useStore";
 // can get all graphs, the most recent N graphs, or one graph by graph id
 
 // todo: use localstorage with expiration instead of session storage?
+// todo: make sure dbName gets updated when graph is fetched from Notion
 
 const sortBySavedDescending = (graphs: Graph[]) =>
   graphs.sort((g1, g2) => g2.lastSaved.localeCompare(g1.lastSaved));

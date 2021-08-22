@@ -67,7 +67,8 @@ export default (): JSX.Element => {
   const query = search.get().toLowerCase();
   const filteredGraphs = graphs.filter(
     (g) =>
-      g.db.toLowerCase().includes(query) || g.name.toLowerCase().includes(query)
+      g.dbName.toLowerCase().includes(query) ||
+      g.name.toLowerCase().includes(query)
   );
   return (
     <ContentContainer maxWidth="md">

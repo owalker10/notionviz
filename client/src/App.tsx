@@ -24,7 +24,6 @@ const App = (): JSX.Element => {
           <Router>
             <GlobalProvider>
               {/* use code-splitting for web-based pages and embed page since one client is not likely to render both */}
-              {/* todo: fallback element */}
               <Suspense fallback={<FallbackSpinner />}>
                 <Switch>
                   <Route exact path="/">
@@ -40,7 +39,6 @@ const App = (): JSX.Element => {
                     path={`/${embedPath}`}
                     component={lazy(() => import("./Routes/Embed"))}
                   />
-                  <Route component={FallbackSpinner} />
                   <Route component={() => <Redirect to={`/${webPath}`} />} />
                 </Switch>
               </Suspense>

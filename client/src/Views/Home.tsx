@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { makeStyles, Typography, useTheme } from "@material-ui/core";
 import { GraphType } from "common/lib/graph";
 import { Graph } from "common/lib/firestore/schemas";
@@ -20,6 +20,8 @@ import { useGraphs } from "../hooks/useGraphs";
 import useTitle from "../hooks/useTitle";
 import { toWebPath } from "../utils/routes";
 import { ContentContainer } from "../Components/MainLayout";
+import { fetchDatabase } from "../Services/api";
+import { auth } from "../Services/Firebase";
 
 const useStyles = makeStyles((theme) => ({
   content: {
@@ -89,7 +91,8 @@ const useStyles = makeStyles((theme) => ({
 export const mockGraph = (gid: string): Graph => ({
   name: `Test Graph ${gid}`,
   id: gid,
-  db: "My Database",
+  dbName: "My Database",
+  dbId: "b22f9ca404364e9e85916e9f70be5dc5",
   isPublic: false,
   lastSaved: new Date(Date.now()).toISOString(),
   props: [],
@@ -109,6 +112,14 @@ export default (): React.ReactElement => {
     remove,
     isLoading: graphsLoading,
   } = useGraphs({ limit: 3 });
+
+  useEffect(() => {
+    const uid = auth().currentUser?.uid;
+    const gid = graphs[0]?.id;
+    if (gid && uid)
+      fetchDatabase(uid, graphs[0].id).then((data) => console.log(data));
+  }, [graphsLoading]);
+
   const isLoading = authLoading || graphsLoading;
   // for whatever reason, using set on a function will call that function??
   const undoDelete = useFunState<(() => VoidFunction) | undefined>(undefined);

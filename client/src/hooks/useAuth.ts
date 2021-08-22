@@ -1,7 +1,7 @@
 import { FunState } from "fun-state";
 import { useContext } from "react";
 import { AppContext, Auth } from "../Context/context";
-import { localAuthUrl } from "../Services/api";
+import { endpoint } from "../Services/api";
 import { auth as authService } from "../Services/Firebase";
 import { clearUserStore } from "./useStore";
 
@@ -19,9 +19,4 @@ export const useAuth = (): {
   return { auth: authState, logout };
 };
 
-export const authRedirectURL = `${
-  process.env.NODE_ENV === "development" &&
-  process.env.REACT_APP_HOST !== "true"
-    ? localAuthUrl
-    : ""
-}/auth/redirect`;
+export const authRedirectURL = endpoint("/auth/redirect");
