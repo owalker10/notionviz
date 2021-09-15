@@ -35,9 +35,8 @@ export type Mode = "dark" | "light";
 
 const initMode = getUserStore<Mode>("previewMode", localStorage);
 export const graphCache = (): Cache => {
-  // console.log("getting cache", getUserStore<Cache>("graphs", sessionStorage));
   return (
-    getUserStore<Cache>("graphs", sessionStorage) ?? { all: [], preview: true }
+    getUserStore<Cache>("graphs", localStorage) ?? { all: [], preview: true }
   );
 };
 
@@ -50,10 +49,7 @@ const initialState: Context = {
   },
   mode: initMode ?? "light",
   graphs: {
-    ...(getUserStore<Cache>("graphs", sessionStorage) ?? {
-      preview: true,
-      all: [],
-    }),
+    ...graphCache(),
     isLoading: false,
   },
 };
@@ -140,7 +136,7 @@ export const GlobalProvider = ({
   }, []);
 
   useEffect(() => {
-    setUserStore("previewMode", localStorage, mode);
+    setUserStore("previewMode", localStorage, mode, undefined);
   }, [mode]);
 
   // for debugging :))

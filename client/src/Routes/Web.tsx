@@ -21,7 +21,7 @@ export default (): JSX.Element => {
           <Edit />
         </Route>
         <Route exact path={toWebPath("/new")}>
-          <div />
+          <Edit />
         </Route>
         <Route>
           <NotFound />

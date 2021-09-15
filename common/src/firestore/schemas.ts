@@ -1,4 +1,5 @@
-import { Graph as GraphBase } from "../graph";
+import { defaultOptions, Graph as GraphBase, GraphType } from "../graph";
+import { PropertyType } from "../notion/schemas";
 
 export interface Graph extends GraphBase {
   name: string,
@@ -8,6 +9,35 @@ export interface Graph extends GraphBase {
   isPublic: boolean;
   lastSaved: string;
   props: string[] // todo
+}
+
+export const defaultGraph: Graph = {
+  name: '',
+  id: '',
+  dbName: '',
+  dbId: '',
+  isPublic: true,
+  lastSaved: '',
+  props: [],
+  type: GraphType.bar,
+  x: {
+    type: "categorical",
+    property: { name: "", id: "", type: PropertyType.Checkbox },
+    id: '',
+    options: defaultOptions,
+  },
+  y: {
+    type: "numerical",
+    property: { name: "", id: "", type: PropertyType.Checkbox },
+    id: "",
+    options: defaultOptions,
+  },
+  group: {
+    type: "categorical",
+    property: { name: "", id: "", type: PropertyType.Checkbox },
+    id: '',
+    options: defaultOptions,
+  },
 }
 export interface User {
   uid: string;

@@ -1,7 +1,7 @@
 // https://developers.notion.com/docs/working-with-databases
 // https://www.npmjs.com/package/@notionhq/client
 import { APIErrorCode, APIResponseError, Client } from '@notionhq/client';
-import { DatabasesQueryResponse, SearchResponse } from '@notionhq/client/build/src/api-endpoints';
+import { DatabasesQueryResponse, DatabasesRetrieveResponse, SearchResponse } from '@notionhq/client/build/src/api-endpoints';
 import { Database as NotionDB, Page as NotionPage } from '@notionhq/client/build/src/api-types';
 import { ClientOptions } from '@notionhq/client/build/src/Client';
 
@@ -22,7 +22,7 @@ export const list = async (auth: string, options: ClientOptions = {}) => {
       filter: { property: 'object', value: 'database'},
       start_cursor,
     })
-    databases.concat(results.results as NotionDB[]); // todo change this to schemas.ts Database
+    databases.push(...results.results as NotionDB[]);
     has_more = results.has_more;
     start_cursor = results.next_cursor ?? undefined;
   }
@@ -45,6 +45,15 @@ export const read = async (database_id: string, auth: string, options: ClientOpt
     start_cursor = results.next_cursor ?? undefined;
   }
   return pages;
+}
+
+// read database (with pagination)
+export const schema = async (database_id: string, auth: string, options: ClientOptions = {}) => {
+  const client = new Client({...options, auth});
+  const db = await client.databases.retrieve({
+    database_id,
+  });
+  return db.properties;
 }
 
 export const isAPIResponseError = APIResponseError.isAPIResponseError

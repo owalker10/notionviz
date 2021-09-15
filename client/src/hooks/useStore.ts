@@ -1,5 +1,12 @@
 import React from "react";
 
+interface StorageItem<T> {
+  data: T;
+  expiration: number | undefined;
+}
+
+const EXPIRATION = 3 * 60000; // miliseconds
+
 export const useStore = <T>(
   key: string,
   defaultValue: T,
@@ -21,23 +28,35 @@ export const useStore = <T>(
   return [value, onChange];
 };
 
-export const useUserStore = <T>(
-  key: string,
-  defaultValue: T,
-  store: "session" | "local"
-): [T, (t: T) => void] => useStore(key, defaultValue, store, "User::");
+// implement expiration
+// export const useUserStore = <T>(
+//   key: string,
+//   defaultValue: T,
+//   store: "session" | "local"
+// ): [T, (t: T) => void] => useStore(key, defaultValue, store, "User::");
 
 export const getUserStore = <T>(key: string, store: Storage): T | undefined => {
-  const item = store.getItem(`User::${key}`);
-  return item ? JSON.parse(item) : undefined;
+  const itemJSON = store.getItem(`User::${key}`);
+  const item = itemJSON ? (JSON.parse(itemJSON) as StorageItem<T>) : undefined;
+  if (!item || !item.data) return undefined;
+  if (item.expiration && item.expiration < Date.now()) return undefined;
+  return item.data;
 };
 
 export const setUserStore = <T>(
   key: string,
   store: Storage,
-  value: T | undefined
+  value: T | undefined,
+  expiration: number | undefined = EXPIRATION
 ): void => {
-  store.setItem(`User::${key}`, JSON.stringify(value));
+  const item = {
+    data: value,
+    expiration:
+      store === localStorage && expiration
+        ? Date.now() + expiration
+        : undefined,
+  };
+  store.setItem(`User::${key}`, JSON.stringify(item));
 };
 
 export const removeUserStore = (key: string, store: Storage): void => {

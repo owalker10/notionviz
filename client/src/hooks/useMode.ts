@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AppContext, Mode } from "../Context/context";
+import { AppContext, Mode } from "../State/context";
 
 export const useMode = (): {
   mode: Mode;

@@ -1,6 +1,6 @@
 import { FunState } from "fun-state";
 import { useContext } from "react";
-import { AppContext, Auth } from "../Context/context";
+import { AppContext, Auth } from "../State/context";
 import { endpoint } from "../Services/api";
 import { auth as authService } from "../Services/Firebase";
 import { clearUserStore } from "./useStore";

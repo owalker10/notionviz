@@ -9,7 +9,7 @@ import "./App.css";
 import { ThemeProvider } from "@material-ui/core/styles";
 import { CssBaseline } from "@material-ui/core";
 import theme from "./styles/theme";
-import { GlobalProvider } from "./Context/context";
+import { GlobalProvider } from "./State/context";
 import { embedPath, webPath } from "./utils/routes";
 import { FallbackSpinner } from "./Components/spinner";
 

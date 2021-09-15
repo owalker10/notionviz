@@ -1,7 +1,17 @@
-import { asTypedDb, DatabaseQueryPayload, getData, Graph } from "common";
+/* eslint-disable consistent-return */
+import {
+  asTypedDb,
+  convertList,
+  convertQuery,
+  convertSchemas,
+  DatabaseListPayload,
+  DatabaseQueryPayload,
+  getData,
+  Graph,
+} from "common";
 import express from "express";
 import admin from "firebase-admin";
-import { read } from "common/lib/notion/functions-only";
+import { list, read, schema } from "common/lib/notion/functions-only";
 import cors from "cors";
 // import getEnv from "../env";
 
@@ -19,19 +29,19 @@ const db = asTypedDb(admin.firestore());
 
 router.post("/query", async (req, res) => {
   console.log(req.body);
-  const { graphId, uid, idToken, passkey } = req.body as DatabaseQueryPayload;
-  if (!graphId) res.status(400).send(new Error("No graph id specified."));
-  if (!uid) res.status(400).send(new Error("No uid specified."));
-  const graph: Graph | undefined = await getData(db.graphs(uid), graphId)
-    .then((g) => {
-      if (!g) throw new Error("Graph not found");
-      return g;
-    })
-    .catch((err) => {
-      res.status(404).send(err);
-      return undefined;
-    });
-  if (!graph) return;
+  const {
+    graphId, // either graphId or dbId must be defined
+    dbId, // only want this coming from authenticated client (aka has idToken)
+    uid,
+    idToken,
+    passkey,
+    schema: needSchema,
+  } = req.body as DatabaseQueryPayload;
+  if (!uid) return res.status(400).send(new Error("No uid specified."));
+  if (!dbId && !graphId)
+    return res
+      .status(400)
+      .send(new Error("No database id or graph id specified."));
   const user = await getData(db.users, uid)
     .then((u) => {
       if (!u) throw new Error("user not found");
@@ -42,6 +52,8 @@ router.post("/query", async (req, res) => {
       return undefined;
     });
   if (!user) return;
+
+  let myDbId = "";
 
   // check permissions
 
@@ -55,15 +67,35 @@ router.post("/query", async (req, res) => {
       res
         .status(403)
         .send(new Error("requested user does not match requester uid"));
+    if (!dbId)
+      return res.status(400).send(new Error("No database id specified."));
+    myDbId = dbId;
 
     // if it's coming from an embed and the graph is not public, the request needs a passkey
-  } else if (!graph?.isPublic) {
-    if (!passkey) res.status(403).send(new Error("no passkey specified"));
-    const truePasskey = user?.passkeys[graphId];
-    if (!truePasskey)
-      res.status(500).send(new Error("error verifying passkey"));
-    if (truePasskey !== passkey)
-      res.status(403).send(new Error("invalid passkey"));
+  } else {
+    const graph: Graph | undefined = graphId
+      ? await getData(db.graphs(uid), graphId)
+          .then((g) => {
+            if (!g) throw new Error("Graph not found");
+            return g;
+          })
+          .catch((err) => {
+            res.status(404).send(err);
+            return undefined;
+          })
+      : undefined;
+    if (!graph || !graphId)
+      return res.status(400).send(new Error("No graph id specified."));
+    // check passkey
+    if (!graph.isPublic) {
+      if (!passkey) res.status(403).send(new Error("no passkey specified"));
+      const truePasskey = user?.passkeys[graphId];
+      if (!truePasskey)
+        res.status(500).send(new Error("error verifying passkey"));
+      if (truePasskey !== passkey)
+        res.status(403).send(new Error("invalid passkey"));
+      myDbId = graph.dbId;
+    }
   }
 
   // passed the vibe check
@@ -78,7 +110,46 @@ router.post("/query", async (req, res) => {
 
   // send the database data
   // eslint-disable-next-line consistent-return
-  return read(graph.dbId, notionToken).then((pages) => res.json(pages));
+  const pages = await read(myDbId, notionToken);
+  const rows = convertQuery(pages);
+  if (needSchema) {
+    const properties = await schema(myDbId, notionToken);
+    const dbSchema = convertSchemas(properties);
+    return res.json({
+      rows,
+      id: myDbId,
+      schema: dbSchema,
+    });
+  }
+  return res.json({ rows });
+});
+
+router.post("/databases", async (req, res) => {
+  console.log(req.body);
+  const { uid, idToken } = req.body as DatabaseListPayload;
+  if (!uid) res.status(400).send(new Error("No uid specified."));
+
+  const tokenUid = await admin
+    .auth()
+    .verifyIdToken(idToken)
+    .then((dec) => dec.uid);
+  if (tokenUid !== uid)
+    res
+      .status(403)
+      .send(new Error("requested user does not match requester uid"));
+
+  const notionToken = await db
+    .private(uid)
+    .doc("token")
+    .get()
+    .then((snap) => snap.data()?.token);
+  if (!notionToken)
+    // eslint-disable-next-line consistent-return
+    return res.status(500).send(new Error("Error fetching data from Notion"));
+
+  const notionDatabases = await list(notionToken);
+  const databases = convertList(notionDatabases);
+  return res.json(databases);
 });
 
 export default router;

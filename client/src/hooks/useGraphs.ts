@@ -2,13 +2,7 @@ import { getData } from "common/lib";
 import { Graph } from "common/lib/firestore/schemas";
 import { FunState } from "fun-state";
 import { useContext, useEffect } from "react";
-import {
-  AppContext,
-  graphCache,
-  Graphs,
-  Cache,
-  User,
-} from "../Context/context";
+import { AppContext, graphCache, Graphs, Cache, User } from "../State/context";
 import { firestore } from "../Services/Firebase";
 import { useAuth } from "./useAuth";
 import { setUserStore } from "./useStore";
@@ -64,7 +58,7 @@ const setGraph = async (state: FunState<Graphs>, graph: Graph, user: User) => {
     console.log("graphs", graphs);
     return graphs;
   });
-  setUserStore("graphs", sessionStorage, state.get());
+  setUserStore("graphs", localStorage, state.get());
   return firestore.graphs(user.uid).doc(id.toString()).set(graph);
 };
 
@@ -87,7 +81,7 @@ const deleteGraph = async (
     .doc(id.toString())
     .delete()
     .then(() => {
-      setUserStore("graphs", sessionStorage, state.get());
+      setUserStore("graphs", localStorage, state.get());
 
       const restore = () => {
         setGraph(state, graph, user);
@@ -98,7 +92,7 @@ const deleteGraph = async (
 };
 
 const cacheResults = (results: Cache) =>
-  setUserStore("graphs", sessionStorage, {
+  setUserStore("graphs", localStorage, {
     all: results.all,
     preview: results.preview,
   });
@@ -130,7 +124,8 @@ export const useGraphs = ({
     const { all, preview } = state.get();
     // gid is specified so we want 1 graph
     if (user && gid) {
-      const graph = all.filter((g) => g.id === gid)[0];
+      if (gid === "none") return;
+      const graph = all.find((g) => g.id === gid);
       if (!graph) {
         state.prop("isLoading").set(true);
         console.log("fetch one");

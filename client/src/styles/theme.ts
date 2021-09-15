@@ -103,6 +103,26 @@ const theme = createTheme({
         },
       },
     },
+    MuiTooltip: {
+      tooltip: {
+        backgroundColor: "#0F0F0F",
+        boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.2)",
+      },
+    },
+    MuiChip: {
+      root: {
+        borderRadius: "3px",
+        height: "22px",
+        fontSize: "14px",
+      },
+    },
+    MuiTextField: {
+      root: {
+        "& > p": {
+          marginLeft: "2px",
+        },
+      },
+    },
   },
 });
 

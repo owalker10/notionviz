@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren } from "react";
+import React, { ComponentProps, FC, PropsWithChildren } from "react";
 import { makeStyles, Typography, useTheme } from "@material-ui/core";
 import useMobileBreakpoint from "../hooks/useMobileBreakpoint";
 
@@ -22,13 +22,17 @@ const FormRow: FC<
   PropsWithChildren<{
     title: string;
     classes?: { root?: string; title?: string };
+    titleColor?: ComponentProps<typeof Typography>["color"];
   }>
-> = ({ children, title, classes }) => {
+> = ({ children, title, classes, titleColor }) => {
   const mobile = useMobileBreakpoint(550);
   const styles = useStyles(mobile)(useTheme());
   return (
     <div className={`${styles.row} ${classes?.root ?? ""}`}>
-      <Typography className={`${styles.rowTitle} ${classes?.title ?? ""}`}>
+      <Typography
+        color={titleColor ?? "inherit"}
+        className={`${styles.rowTitle} ${classes?.title ?? ""}`}
+      >
         {title}
       </Typography>
       {children}

@@ -25,7 +25,7 @@ This project is a work-in progress.
 - [ ] implement graph editing on frontend
 - [ ] implement graph embed on frontend
 - [x] implement passkey verification on backend for private graphs
-- [ ] implement Notion API wrapper in backend
+- [X] implement Notion API wrapper in backend
 - [ ] create documentation and examples
 
 ### Repository structure:
