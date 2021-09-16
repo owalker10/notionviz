@@ -1,4 +1,4 @@
-# NotionViz
+# NotionViz (work in progress)
 
 ## Create custom data visualizations from Notion databases.
 
