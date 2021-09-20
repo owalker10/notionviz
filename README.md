@@ -2,6 +2,11 @@
 
 ## Create custom data visualizations from Notion databases.
 
+![image](https://user-images.githubusercontent.com/36974651/133950852-2112f1b0-da92-488e-9161-aa11e0f4a37b.png)
+
+![image](https://user-images.githubusercontent.com/36974651/133950746-9aa1f3f4-8e14-4e87-8915-27f1b3d5faea.png)
+
+
 NotionViz is a web application built on React, Express, and Firebase.
 
 This project is a work-in progress.
