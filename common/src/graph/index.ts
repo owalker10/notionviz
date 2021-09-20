@@ -166,7 +166,8 @@ const axes = {
   [GraphType.bar]: {
     x: "categorical",
     y: "numerical",
-    groupOptional: "categorical",
+    group: "categorical",
+    optional: true,
   },
   [GraphType.line]: {
     x: "numerical",
@@ -190,6 +191,7 @@ const axes = {
     x: "categorical",
     y: "categorical",
     group: "numerical",
+    optional: false,
   }
 } as const;
 

@@ -2,7 +2,7 @@ import { MenuItem, Select } from "@material-ui/core";
 import { GraphType } from "common/lib/graph";
 import { FunState } from "fun-state";
 import React from "react";
-import { EditState } from "../../State/EditState";
+import { EditState, unsave } from "../../State/EditState";
 
 export default ({ state }: { state: FunState<EditState> }): JSX.Element => {
   return (
@@ -12,11 +12,13 @@ export default ({ state }: { state: FunState<EditState> }): JSX.Element => {
       value={state.prop("graph").prop("type").get()}
       onChange={(e) => {
         const input = e.target.value;
-        if (Object.values(GraphType).includes(input as GraphType))
+        if (Object.values(GraphType).includes(input as GraphType)) {
           state
             .prop("graph")
             .prop("type")
             .set(e.target.value as GraphType);
+          unsave(state);
+        }
       }}
     >
       {[...Object.values(GraphType)].map((t) => (

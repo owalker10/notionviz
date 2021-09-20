@@ -1,5 +1,6 @@
 import { defaultGraph, Graph } from "common/lib/firestore/schemas";
 import { AnyProperty, Database, Row } from "common/lib/notion/schemas";
+import { FunState } from "fun-state";
 
 // todo: error
 export interface EditState {
@@ -11,6 +12,7 @@ export interface EditState {
   schema: AnyProperty[];
   data: Row[];
   dataLoading: boolean;
+  collapsed: boolean;
 }
 
 export const initEditState: EditState = {
@@ -22,6 +24,7 @@ export const initEditState: EditState = {
   schema: [],
   data: [],
   dataLoading: true,
+  collapsed: false,
 };
 
 export const spinStyle = {
@@ -33,3 +36,7 @@ export const spinStyle = {
     to: { transform: "rotate(360deg)" },
   },
 } as const;
+
+export const unsave = (state: FunState<EditState>): void => {
+  state.prop("saved").set(false);
+};

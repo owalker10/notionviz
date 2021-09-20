@@ -1,11 +1,17 @@
 import React, { ChangeEvent, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import useFunState, { FunState } from "fun-state";
-import { makeStyles, Typography, useTheme } from "@material-ui/core";
+import {
+  IconButton,
+  makeStyles,
+  Typography,
+  useTheme,
+} from "@material-ui/core";
 import SaveIcon from "@material-ui/icons/Save";
 import LoadIcon from "@material-ui/icons/Loop";
 import CodeIcon from "@material-ui/icons/Code";
-import { defaultGraph } from "common/lib/firestore/schemas";
+import { Graph } from "common/lib/firestore/schemas";
+import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import { ContentContainer } from "../Components/MainLayout";
 import { useGraphs } from "../hooks/useGraphs";
 import { FlexColumn, injectProps } from "../utils/components";
@@ -13,14 +19,20 @@ import DefaultFormRow from "../Components/FormRow";
 import { useAuth } from "../hooks/useAuth";
 import { EditableTitle, Title } from "../styles/typography";
 import { useDatabases } from "../hooks/useDatabases";
-import { isValidDb, isValidGraphType } from "../utils/validations";
+import {
+  isValidDb,
+  isValidGraph,
+  isValidGraphType,
+} from "../utils/validations";
 import { PrimaryButton, SecondaryButton } from "../Components/buttons";
 import useTitle from "../hooks/useTitle";
 import DatabaseSelect from "../Components/Edit/DatabaseSelect";
-import { EditState, initEditState } from "../State/EditState";
+import { EditState, initEditState, unsave } from "../State/EditState";
 import GraphTypeSelect from "../Components/Edit/GraphTypeSelect";
 import ControlPanel from "../Components/Edit/ControlPanel";
 import { fetchDatabase } from "../Services/api";
+import { shortUuid } from "../utils/uuid";
+import GenericGraph from "../Components/Graphs/GenericGraph";
 
 const useStyles = makeStyles((theme) => ({
   newContainer: {
@@ -75,6 +87,11 @@ const useStyles = makeStyles((theme) => ({
     "& > :first-child": {
       flexShrink: 0,
     },
+  },
+  showButton: {
+    position: "absolute",
+    right: "-35px",
+    top: "3px",
   },
 }));
 
@@ -142,9 +159,10 @@ const EditView = ({
   refreshDatabases: VoidFunction;
 }) => {
   const styles = useStyles(useTheme());
-  const { graph } = state.get();
+  const { graph, data } = state.get();
   const saved = state.prop("saved").get();
   const { user } = useAuth().auth.get();
+  const { set } = useGraphs({ limit: -1 });
   // arguments for database fetch
   const args = [
     user?.uid ?? "",
@@ -172,6 +190,23 @@ const EditView = ({
     }
   }, [...args]);
 
+  // todo: error handling
+  const save = () => {
+    const invalidProp = isValidGraph(graph);
+    if (!invalidProp) {
+      const graphToSave: Graph = {
+        ...graph,
+        id: graph.id || shortUuid(),
+        lastSaved: new Date(Date.now()).toISOString(),
+      };
+      set(graphToSave); // firebase write
+      state.prop("graph").set(graphToSave);
+      state.prop("saved").set(true);
+    } else console.log(invalidProp, graph);
+  };
+
+  console.log(data);
+
   return (
     <FlexColumn style={{ width: "100%" }}>
       <div className={styles.titleWrapper}>
@@ -181,13 +216,13 @@ const EditView = ({
           placeholder="Untitled"
           onChange={(e: ChangeEvent<HTMLInputElement>) => {
             state.prop("graph").prop("name").set(e.target.value);
-            state.prop("saved").set(false);
+            unsave(state);
           }}
         />
       </div>
       <div className={styles.buttonWrapper}>
         {/* todo: validation */}
-        <PrimaryButton startIcon={<SaveIcon />} disabled={saved}>
+        <PrimaryButton startIcon={<SaveIcon />} disabled={saved} onClick={save}>
           Save
         </PrimaryButton>
         <PrimaryButton startIcon={<CodeIcon />} disabled={!saved}>
@@ -203,14 +238,24 @@ const EditView = ({
           style={{
             width: "300px",
             height: "300px",
-            backgroundColor: "lightgrey",
+            backgroundColor: "#F7F6F3",
             resize: "both",
             overflow: "auto",
+            padding: "5px",
           }}
         >
-          <p>{JSON.stringify(graph.x)}</p>
-          <p>{JSON.stringify(graph.y)}</p>
+          {/* <p>{JSON.stringify(graph.x)}</p>
+          <p>{JSON.stringify(graph.y)}</p> */}
+          <GenericGraph graph={graph} data={data} />
         </div>
+        <IconButton
+          size="small"
+          className={styles.showButton}
+          onClick={() => state.prop("collapsed").set(false)}
+        >
+          <ChevronLeftIcon />
+        </IconButton>
+
         <ControlPanel state={state} refreshDatabases={refreshDatabases} />
       </div>
     </FlexColumn>
@@ -222,6 +267,7 @@ export default (): JSX.Element => {
   const { gid } = useParams<{ gid: string }>();
   const { auth } = useAuth();
   const { graphs, isLoading } = useGraphs({ gid: gid ?? "none" });
+  // todo: if gid && not graph[gid] && not isLoading return 404
   const dbGraph = graphs[0];
   const state = useFunState<EditState>(initEditState);
   const { graph, saved, created } = state.get();
@@ -232,21 +278,11 @@ export default (): JSX.Element => {
   // update graph from firestore
   useEffect(() => {
     if (dbGraph && !graph.id) {
+      console.log("dbgraph", dbGraph);
       state.prop("graph").set(dbGraph);
     }
   }, [isLoading]);
   const uid = auth.prop("user").get()?.uid;
-
-  // reset config when database is changed
-  useEffect(() => {
-    const { x, y, group } = defaultGraph;
-    state.prop("graph").mod((g) => ({
-      ...g,
-      x,
-      y,
-      group,
-    }));
-  }, [graph.dbId]);
 
   const refreshDatabases = useDatabases(uid, state);
 

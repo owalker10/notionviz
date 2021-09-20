@@ -48,6 +48,7 @@ export default ({
   axis,
   loading,
   optional,
+  unsave,
 }: {
   state: FunState<AnyVariable>;
   type: GraphType;
@@ -55,6 +56,7 @@ export default ({
   axis: "x" | "y" | "group";
   loading: boolean;
   optional?: boolean;
+  unsave: VoidFunction;
 }): JSX.Element => {
   const items = getVariables(variables, type, axis).map((v) => ({
     value: v, // todo: time scale
@@ -71,6 +73,7 @@ export default ({
       items={items}
       propertyKey="id"
       disabled={loading}
+      sideEffect={unsave}
     />
   );
 };

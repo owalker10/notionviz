@@ -22,7 +22,6 @@ const fetchGraphs = async (
   startAfter: Graph["lastSaved"],
   limit?: number
 ): Promise<Cache> => {
-  console.log(startAfter, limit);
   let query = firestore.graphs(uid).orderBy("lastSaved", "desc");
   if (startAfter) query = query.startAfter(startAfter);
   if (limit) query = query.limit(limit);

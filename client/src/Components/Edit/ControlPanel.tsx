@@ -18,7 +18,7 @@ import {
 } from "common/lib/graph";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import { ContentHeader } from "../../styles/typography";
-import { EditState } from "../../State/EditState";
+import { EditState, unsave } from "../../State/EditState";
 import { FlexColumn, injectProps } from "../../utils/components";
 import DefaultFormRow from "../FormRow";
 import DatabaseSelect from "./DatabaseSelect";
@@ -29,50 +29,52 @@ import getOptionInputs from "./OptionInputs";
 
 // todo: make this overlay instead of wrap on overflow
 
-const useStyles = makeStyles((theme) => ({
-  paper: {
-    position: "absolute",
-    right: "-50px",
-    overflow: "hidden", // this is literally just to apply the Paper border radius to the top collapse bar
-  },
-  topBar: {
-    backgroundColor: theme.palette.secondary.main,
-    width: "100%",
-    height: "40px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: theme.spacing(0, 2),
-    "& > p": {
-      color: theme.palette.text.hint,
-      fontSize: "14px",
+const useStyles = (collapsed: boolean) =>
+  makeStyles((theme) => ({
+    paper: {
+      position: "absolute",
+      right: collapsed ? "-500px" : "-50px",
+      overflow: "hidden", // this is literally just to apply the Paper border radius to the top collapse bar
+      transition: "all .2s ease-in",
     },
-  },
-  wrapper: {
-    marginLeft: "auto",
-    width: "400px",
-    padding: theme.spacing(2, 3),
-  },
-  section: {
-    width: "100%",
-    marginBottom: theme.spacing(3),
-  },
-  sectionHeader: {
-    marginBottom: theme.spacing(1),
-    alignSelf: "flex-start",
-    display: "flex",
-    alignItems: "center",
-    "& > *": {
-      marginRight: theme.spacing(2),
+    topBar: {
+      backgroundColor: theme.palette.secondary.main,
+      width: "100%",
+      height: "40px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: theme.spacing(0, 2),
+      "& > p": {
+        color: theme.palette.text.hint,
+        fontSize: "14px",
+      },
     },
-    "& > :last-child": {
-      marginRight: 0,
+    wrapper: {
+      marginLeft: "auto",
+      width: "400px",
+      padding: theme.spacing(2, 3),
     },
-  },
-  formRowLabel: {
-    color: theme.palette.text.secondary,
-  },
-}));
+    section: {
+      width: "100%",
+      marginBottom: theme.spacing(3),
+    },
+    sectionHeader: {
+      marginBottom: theme.spacing(1),
+      alignSelf: "flex-start",
+      display: "flex",
+      alignItems: "center",
+      "& > *": {
+        marginRight: theme.spacing(2),
+      },
+      "& > :last-child": {
+        marginRight: 0,
+      },
+    },
+    formRowLabel: {
+      color: theme.palette.text.secondary,
+    },
+  }));
 
 const CategoricalChip = () => (
   <Chip
@@ -106,8 +108,8 @@ const Section: FC<{
   chips?: Chips;
   inputs: JSX.Element[];
   noDivider?: boolean;
-}> = ({ title, chips, inputs, noDivider }) => {
-  const styles = useStyles(useTheme());
+}> = ({ state, title, chips, inputs, noDivider }) => {
+  const styles = useStyles(state.prop("collapsed").get())(useTheme());
   return (
     <FlexColumn
       className={styles.section}
@@ -130,7 +132,7 @@ export default ({
   state: FunState<EditState>;
   refreshDatabases: VoidFunction;
 }): JSX.Element => {
-  const styles = useStyles(useTheme());
+  const styles = useStyles(state.prop("collapsed").get())(useTheme());
   const FormRow = injectProps(DefaultFormRow, {
     classes: { title: styles.formRowLabel },
   });
@@ -138,6 +140,7 @@ export default ({
   const togglePublic = (e: React.ChangeEvent<HTMLInputElement>) => {
     const isPublic = e.currentTarget.checked;
     state.prop("graph").prop("isPublic").set(isPublic);
+    unsave(state);
   };
   const xName = getXAlias(graph.type);
   const yName = getYAlias(graph.type);
@@ -147,15 +150,17 @@ export default ({
   const groupChips = group ? [chipMap[group]] : [];
   if (groupChips[0] && optional) groupChips.push(chipMap.optional);
   const variables = useMemo(() => {
-    console.log("hello");
-    console.log(schema);
     return schema.flatMap(propertyToVariables);
   }, [dataLoading, graph.dbId]);
   return (
     <Paper elevation={8} className={styles.paper}>
       <div className={styles.topBar}>
         <Typography color="textSecondary">configure your graph</Typography>
-        <IconButton size="small" style={{ transform: "rotate(180deg)" }}>
+        <IconButton
+          size="small"
+          style={{ transform: "rotate(180deg)" }}
+          onClick={() => state.prop("collapsed").set(true)}
+        >
           <ChevronLeftIcon />
         </IconButton>
       </div>
@@ -195,6 +200,7 @@ export default ({
                 axis="x"
                 variables={variables}
                 loading={dataLoading}
+                unsave={() => unsave(state)}
               />
             </FormRow>,
             // only show options if group property is selected
@@ -216,6 +222,7 @@ export default ({
                 axis="y"
                 variables={variables}
                 loading={dataLoading}
+                unsave={() => unsave(state)}
               />
             </FormRow>,
             // only show options if group property is selected
@@ -228,7 +235,7 @@ export default ({
         {group ? (
           <Section
             state={state}
-            title="Group"
+            title="group"
             chips={groupChips}
             inputs={[
               <FormRow title="Property">
@@ -239,6 +246,7 @@ export default ({
                   variables={variables}
                   optional={optional}
                   loading={dataLoading}
+                  unsave={() => unsave(state)}
                 />
               </FormRow>,
               // only show options if group property is selected

@@ -11,9 +11,11 @@ const useStyles = makeStyles((theme) => ({
 export default ({
   state,
   helperText,
+  sideEffect,
 }: {
   state: FunState<string>;
   helperText?: string;
+  sideEffect?: VoidFunction;
 }): JSX.Element => {
   const { root } = useStyles(useTheme());
   return (
@@ -23,7 +25,10 @@ export default ({
       margin="dense"
       helperText={helperText}
       value={state.get()}
-      onChange={(e) => state.set(e.target.value)}
+      onChange={(e) => {
+        sideEffect?.();
+        state.set(e.target.value);
+      }}
       InputProps={{
         className: root,
       }}

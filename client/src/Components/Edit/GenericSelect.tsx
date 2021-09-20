@@ -8,12 +8,14 @@ export default <T, K extends keyof T>({
   propertyKey,
   helperText,
   disabled,
+  sideEffect,
 }: {
   state: FunState<T>;
   items: { value: T; element: JSX.Element | string }[];
   propertyKey?: T[K] extends string ? K : never;
   helperText?: string;
   disabled?: boolean;
+  sideEffect?: VoidFunction;
 }): JSX.Element => {
   return (
     <div
@@ -44,6 +46,7 @@ export default <T, K extends keyof T>({
                   .find((t) => t[propertyKey] === e.target.value)
               : e.target.value) as T
           );
+          sideEffect?.();
         }}
       >
         {items.map(({ value, element }) => (

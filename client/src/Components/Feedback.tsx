@@ -126,7 +126,7 @@ export default (): JSX.Element => {
         uid,
         name: user?.workspaceName ?? uid,
         type: state.prop("type").get() as FeedbackType,
-        time: new Date(Date.now()).toUTCString(),
+        time: new Date(Date.now()).toISOString(),
         content: state.prop("feedback").get(),
       })
       .then(() =>

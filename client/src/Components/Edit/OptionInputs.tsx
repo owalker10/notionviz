@@ -1,7 +1,7 @@
 import { AnyVariable, GraphType } from "common/lib/graph";
 import { FunState } from "fun-state";
 import React from "react";
-import { EditState } from "../../State/EditState";
+import { EditState, unsave } from "../../State/EditState";
 import FormRow from "../FormRow";
 import GenericField from "./GenericField";
 import GenericSelect from "./GenericSelect";
@@ -20,7 +20,11 @@ export default (
   const inputs = [
     // label
     <FormRow title="Label">
-      <GenericField state={optionState.prop("label")} helperText="optional" />
+      <GenericField
+        state={optionState.prop("label")}
+        helperText="optional"
+        sideEffect={() => unsave(state)}
+      />
     </FormRow>,
   ];
   if (varType !== "time")
@@ -39,6 +43,7 @@ export default (
               element: varType === "numerical" ? "count as 0" : "include",
             },
           ]}
+          sideEffect={() => unsave(state)}
         />
       </FormRow>
     );
@@ -57,6 +62,7 @@ export default (
               value: f,
               element: f,
             }))}
+            sideEffect={() => unsave(state)}
           />
         </FormRow>,
         <FormRow title="Rounding">
@@ -74,6 +80,7 @@ export default (
                 element: f.toString(),
               }))
             )}
+            sideEffect={() => unsave(state)}
           />
         </FormRow>,
       ]
@@ -88,6 +95,7 @@ export default (
           helperText={`comma-separated values of ${truncate(
             axisState.prop("property").prop("name").get()
           )}`}
+          sideEffect={() => unsave(state)}
         />
       </FormRow>
     );

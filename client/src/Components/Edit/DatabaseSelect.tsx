@@ -8,8 +8,9 @@ import {
 import { FunState } from "fun-state";
 import LoadIcon from "@material-ui/icons/Loop";
 import React from "react";
+import { defaultGraph } from "common/lib";
 import { useAuth } from "../../hooks/useAuth";
-import { EditState, spinStyle } from "../../State/EditState";
+import { EditState, spinStyle, unsave } from "../../State/EditState";
 
 const useStyles = makeStyles(() => ({
   ...spinStyle,
@@ -45,12 +46,18 @@ export default ({
         value={state.prop("graph").prop("dbId").get()}
         onChange={(e) => {
           const db = databases.find((_db) => _db.id === e.target.value);
-          if (db)
+          const oldDbId = state.prop("graph").prop("id").get();
+          const { x, y, group } = defaultGraph;
+          const replacementProps = oldDbId ? { x, y, group } : {};
+          if (db) {
             state.prop("graph").mod((g) => ({
               ...g,
+              ...replacementProps,
               dbId: db.id,
               dbName: db.name,
             }));
+            unsave(state);
+          }
         }}
         disabled={dbLoading}
       >
