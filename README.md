@@ -6,6 +6,7 @@
 
 ![image](https://user-images.githubusercontent.com/36974651/133950746-9aa1f3f4-8e14-4e87-8915-27f1b3d5faea.png)
 
+![image](https://user-images.githubusercontent.com/36974651/133951518-d4011987-b0f8-4bca-bfc6-d039f512ae09.png)
 
 NotionViz is a web application built on React, Express, and Firebase.
 
